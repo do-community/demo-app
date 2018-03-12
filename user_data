@@ -1,0 +1,47 @@
+#!/bin/bash
+
+export do_token="PUT YOUR PERSONAL ACCESS TOKEN HERE"
+export do_spaces_id="PUT YOUR SPACES ACCESS KEY HERE"
+export do_spaces_key="PUT YOUR SPACES ACCESS SECRET HERE"
+export TF_VAR_token=$do_token
+
+apt update 
+apt upgrade -y 
+apt install -y unzip jq
+apt autoremove -y
+ssh-keygen -P "" -f /root/.ssh/id_rsa
+wget https://releases.hashicorp.com/terraform/0.11.3/terraform_0.11.3_linux_amd64.zip?_ga=2.51249321.1440950812.1520845930-1933641127.1512391759 -O terraform_0.11.3_linux_amd64.zip
+unzip terraform_0.11.3_linux_amd64.zip
+mv terraform /usr/bin/terraform
+rm terraform_0.11.3_linux_amd64.zip
+mkdir -p /root/.aws
+cat > /root/.aws/credentials << EOF
+[DO-SPACES]
+aws_access_key_id = $do_spaces_id
+aws_secret_access_key = $do_spaces_key
+EOF
+cat >> /root/.bashrc << EOF
+export do_token=fe71792d2562a8a6e54bda360e7f495836d386b33865689d5a8e316cdabea1b4
+export TF_VAR_token=$do_token
+EOF
+mkdir /root/demo_app
+cd /root/demo_app
+cat > remote.tf << EOF
+terraform {
+  backend "s3" {
+    bucket = "tf-states"
+    key    = "status-page-demo/terraform.tfstate"
+    region = "us-east-1"
+    endpoint = "https://nyc3.digitaloceanspaces.com"
+    access_key = "$do_spaces_id"
+    secret_key = "$do_spaces_key"
+    skip_credentials_validation = true
+    skip_get_ec2_platforms = true
+    skip_requesting_account_id = true
+    skip_metadata_api_check = true
+  }
+}
+EOF
+wget https://gist.githubusercontent.com/dvl-lincore/192e8c0f1189480cfa611f8ee9021df2/raw/71cdc050ecdab9bd2b578501646c80878c7b7ecf/do-demo-main.tf -O main.tf
+terraform init -backend
+terraform import digitalocean_droplet.bastion $(curl -X GET -H "Content-Type: application/json" -u"$do_token:" "https://api.digitalocean.com/v2/droplets"|jq '.droplets[] | select(.name=="bastion")|.id'
