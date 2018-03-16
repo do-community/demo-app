@@ -1,13 +1,13 @@
 #!/bin/bash
 
-export do_token=fe71792d2562a8a6e54bda360e7f495836d386b33865689d5a8e316cdabea1b4
-export do_spaces_id=NUATFHFAPRCUYNNTH4PW
-export do_spaces_key=RetOkM1Q+bZ+QSwJWcgZrJ/AuSMmtnHowGTaDBzl2TA
+export do_token="PUT YOUR PERSONAL ACCESS TOKEN HERE"
+export do_spaces_id="PUT YOUR SPACES ACCESS KEY HERE"
+export do_spaces_key="PUT YOUR SPACES ACCESS SECRET HERE"
 export TF_VAR_token=$do_token
 
-apt update 
+apt update
 apt upgrade -y
-apt install -y unzip jq software-properties-common python-boto3
+apt install -y unzip software-properties-common python-boto3
 apt-add-repository ppa:ansible/ansible
 apt upgrade -y
 apt install -y ansible
@@ -17,6 +17,11 @@ wget https://releases.hashicorp.com/terraform/0.11.3/terraform_0.11.3_linux_amd6
 unzip terraform_0.11.3_linux_amd64.zip
 mv terraform /usr/bin/terraform
 rm terraform_0.11.3_linux_amd64.zip
+cd ~
+wget https://statuspage-demo.nyc3.digitaloceanspaces.com/statuspage-demo.zip
+unzip statuspage-demo.zip -d statuspage-demo
+rm -f statuspage-demo.zip
+cd statuspage-demo
 mkdir -p /root/.aws
 cat > /root/.aws/credentials << EOF
 [DO-SPACES]
@@ -24,11 +29,8 @@ aws_access_key_id = $do_spaces_id
 aws_secret_access_key = $do_spaces_key
 EOF
 cat >> /root/.bashrc << EOF
-export do_token=fe71792d2562a8a6e54bda360e7f495836d386b33865689d5a8e316cdabea1b4
 export TF_VAR_token=$do_token
 EOF
-mkdir /root/demo_app
-cd /root/demo_app
 cat > bucket_create.py << EOF
 import boto3
 from botocore.client import Config
@@ -45,7 +47,7 @@ if 'tf-states' in spaces:
 else:
   client.create_bucket(Bucket='tf-states')
 EOF
-cat > remote.tf << EOF
+cat > terraform/remote.tf << EOF
 terraform {
   backend "s3" {
     bucket = "tf-states"
@@ -61,8 +63,8 @@ terraform {
   }
 }
 EOF
-python bucket_create.py
-wget https://gist.githubusercontent.com/dvl-lincore/192e8c0f1189480cfa611f8ee9021df2/raw/71cdc050ecdab9bd2b578501646c80878c7b7ecf/do-demo-main.tf -O main.tf
+python bucket_create.py && rm -f bucket_create.py
+cd terraform
 terraform init -backend
 terraform import digitalocean_droplet.bastion $(curl -s http://169.254.169.254/metadata/v1/id)
 terraform apply -auto-approve
