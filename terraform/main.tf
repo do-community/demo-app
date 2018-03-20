@@ -41,7 +41,7 @@ resource "digitalocean_droplet" "db" {
 
 #Create Web-Server droplets
 resource "digitalocean_droplet" "web" {
-  count = 2
+  count = "${var.web_server_params["count"]}"
 
   image  = "ubuntu-16-04-x64"
   name   = "statuspage-web-${count.index}"
