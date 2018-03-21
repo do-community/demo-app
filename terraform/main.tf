@@ -69,8 +69,7 @@ resource "digitalocean_loadbalancer" "lb" {
 
   healthcheck {
     port     = 80
-    protocol = "http"
-    path     = "/health"
+    protocol = "tcp"
   }
 
   droplet_ids = ["${digitalocean_droplet.web.*.id}"]
@@ -88,12 +87,30 @@ resource "digitalocean_firewall" "web" {
     {
       protocol         = "tcp"
       port_range       = "80"
-      source_addresses = ["${digitalocean_loadbalancer.lb.ip}"]
+      ssource_load_balancer_uids = ["${digitalocean_loadbalancer.lb.id}"]
     },
     {
       protocol         = "tcp"
       port_range       = "22"
       source_addresses = ["${digitalocean_droplet.bastion.*.ipv4_address_private}"]
+    },
+  ]
+
+  outbound_rule = [
+    {
+      protocol         = "tcp"
+      port_range       = "1-65535"
+      destination_addresses = ["0.0.0.0/0", "::/0"]
+    },
+    {
+      protocol         = "udp"
+      port_range       = "1-65535"
+      destination_addresses = ["0.0.0.0/0", "::/0"]
+    },
+    {
+      protocol         = "icmp"
+      port_range       = "1-65535"
+      destination_addresses = ["0.0.0.0/0", "::/0"]
     },
   ]
 }
@@ -109,5 +126,52 @@ resource "digitalocean_firewall" "db" {
       port_range       = "3306"
       source_addresses = ["${digitalocean_droplet.web.*.ipv4_address_private}"]
     },
+    {
+      protocol         = "tcp"
+      port_range       = "22"
+      source_addresses = ["${digitalocean_droplet.bastion.*.ipv4_address_private}"]
+    },
   ]
+
+  outbound_rule = [
+    {
+      protocol         = "tcp"
+      port_range       = "1-65535"
+      destination_addresses = ["0.0.0.0/0", "::/0"]
+    },
+    {
+      protocol         = "udp"
+      port_range       = "1-65535"
+      destination_addresses = ["0.0.0.0/0", "::/0"]
+    },
+    {
+      protocol         = "icmp"
+      port_range       = "1-65535"
+      destination_addresses = ["0.0.0.0/0", "::/0"]
+    },
+  ]
+}
+
+resource null_resource "ansible_prep" {
+  depends_on = ["digitalocean_droplet.web", "digitalocean_droplet.db"]
+
+  provisioner "local-exec" {
+    command = "cd ../ansible && (cd ../terraform && terraform state pull|sed 's/o:{/{/')) > terraform.tfstate && ./terraform.py --hostfile >> /etc/hosts"
+  }
+}
+
+resource null_resource "ansible_web" {
+  depends_on = ["null_resource.ansible_prep"]
+
+  provisioner "local-exec" {
+    command = "cd ../ansible && ansible-playbook playbooks/web.yml"
+  }
+}
+
+resource null_resource "ansible_db" {
+  depends_on = ["null_resource.ansible_prep"]
+
+  provisioner "local-exec" {
+    command = "cd ../ansible && ansible-playbook playbooks/db.yml"
+  }
 }
