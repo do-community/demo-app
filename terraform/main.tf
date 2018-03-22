@@ -165,11 +165,11 @@ data "template_file" "ansible_hosts" {
 resource null_resource "ansible_prep" {
   depends_on = ["digitalocean_droplet.web", "digitalocean_droplet.db"]
   triggers {
-       template_rendered = "${ data.template_file.ansible_hosts.rendered }"
+       template_rendered = "${data.template_file.ansible_hosts.rendered}"
   }
 
   provisioner "local-exec" {
-    command = "cd ../ansible && echo '${ data.template_file.ansible_hosts.rendered }' > hosts"
+    command = "cd ../ansible && echo '${data.template_file.ansible_hosts.rendered}' > hosts"
   }
 }
 
