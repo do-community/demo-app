@@ -1,6 +1,0 @@
-[webservers]
-statuspage-web-0
-statuspage-web-1
-
-[db]
-statuspage-db

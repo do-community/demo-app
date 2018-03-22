@@ -87,7 +87,7 @@ resource "digitalocean_firewall" "web" {
     {
       protocol         = "tcp"
       port_range       = "80"
-      ssource_load_balancer_uids = ["${digitalocean_loadbalancer.lb.id}"]
+      source_load_balancer_uids = ["${digitalocean_loadbalancer.lb.id}"]
     },
     {
       protocol         = "tcp"
@@ -152,16 +152,29 @@ resource "digitalocean_firewall" "db" {
   ]
 }
 
+data "template_file" "ansible_hosts" {
+    template = "[webservers]\n$${web_ips}\n\n[db]\n$${db_ips}\n"
+    depends_on = ["digitalocean_droplet.web", "digitalocean_droplet.db"]
+
+      vars {
+        web_ips = "${join("\n", digitalocean_droplet.web.*.ipv4_address_private)}"
+        db_ips = "${digitalocean_droplet.db.ipv4_address_private}"
+      }
+}
+
 resource null_resource "ansible_prep" {
   depends_on = ["digitalocean_droplet.web", "digitalocean_droplet.db"]
+  triggers {
+       template_rendered = "${ data.template_file.ansible_hosts.rendered }"
+  }
 
   provisioner "local-exec" {
-    command = "cd ../ansible && (cd ../terraform && terraform state pull|sed 's/o:{/{/')) > terraform.tfstate && ./terraform.py --hostfile >> /etc/hosts"
+    command = "cd ../ansible && echo '${ data.template_file.ansible_hosts.rendered }' > hosts"
   }
 }
 
 resource null_resource "ansible_web" {
-  depends_on = ["null_resource.ansible_prep"]
+  depends_on = ["null_resource.ansible_prep", "digitalocean_firewall.web"]
 
   provisioner "local-exec" {
     command = "cd ../ansible && ansible-playbook playbooks/web.yml"
@@ -169,7 +182,7 @@ resource null_resource "ansible_web" {
 }
 
 resource null_resource "ansible_db" {
-  depends_on = ["null_resource.ansible_prep"]
+  depends_on = ["null_resource.ansible_prep", "digitalocean_firewall.db"]
 
   provisioner "local-exec" {
     command = "cd ../ansible && ansible-playbook playbooks/db.yml"
