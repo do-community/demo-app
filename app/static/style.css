@@ -96,3 +96,8 @@ h6 {
 .incident h6 {
   border-bottom: 0.1rem solid #e1e1e1;
 }
+
+.incident p.highlight {
+  font-weight: 400;
+  color: #eaab3d;
+}
