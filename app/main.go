@@ -45,7 +45,9 @@ func main() {
 	}
 	defer db.Close()
 
-	log.Println(db.Ping())
+	if err = db.Ping(); err != nil {
+		log.Fatal(err)
+	}
 
 	tpl := template.Must(template.ParseFiles("index.html"))
 	handler := &statusPageHandler{db: db, t: tpl}
