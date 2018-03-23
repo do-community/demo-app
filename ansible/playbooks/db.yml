@@ -10,7 +10,8 @@
       port: 22
       host: '{{ inventory_hostname }}'
       search_regex: OpenSSH
-      delay: 60
+      delay: 30
+      connect_timeout: 30
     vars:
       ansible_connection: local
   - name: Install python for Ansible
@@ -60,17 +61,17 @@
 
   - name: Create statuspage database
     mysql_db:
-      name: statuspage-db
+      name: statuspage
       state: present
 
-  - name: Import statuspage-db dump
+  - name: Import statuspage database dump
     mysql_db:
       state: import
       name: all
       target: /root/statuspage-db.sql
 
   - mysql_user:
-      name: statuspage-app
+      name: statuspage
       password: statuspage
-      priv: '*.*:ALL'
+      priv: '*.*:ALL,GRANT'
       state: present

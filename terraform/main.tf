@@ -162,6 +162,26 @@ data "template_file" "ansible_hosts" {
       }
 }
 
+data "template_file" "app_script" {
+    template = "#!/bin/sh\nMYSQL_DATABASE=statuspage MYSQL_HOST=$${db_ip} MYSQL_PORT=3306 MYSQL_PASSWORD=statuspage MYSQL_USER=statuspage go run main.go &"
+    depends_on = ["digitalocean_droplet.db"]
+
+      vars {
+        db_ip = "${digitalocean_droplet.db.ipv4_address_private}"
+      }
+}
+
+resource null_resource "app_script" {
+  depends_on = ["digitalocean_droplet.db"]
+  triggers {
+       template_rendered = "${data.template_file.app_script.rendered}"
+  }
+
+  provisioner "local-exec" {
+    command = "cd ../app && echo '${data.template_file.app_script.rendered}' > run.sh && chmod +x run.sh"
+  }
+}
+
 resource null_resource "ansible_prep" {
   depends_on = ["digitalocean_droplet.web", "digitalocean_droplet.db"]
   triggers {
