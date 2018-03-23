@@ -64,13 +64,6 @@ func (h *statusPageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/html")
 
-	t, err := template.ParseFiles("index.html")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	h.t = t
-
 	components, _ := h.getComponents()
 	incidents, _ := h.getIncidents()
 
