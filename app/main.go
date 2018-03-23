@@ -84,7 +84,7 @@ func (h *statusPageHandler) getComponents() ([]component, error) {
 	rows, err := h.db.Query("SELECT name, status FROM components ORDER BY name")
 	if err != nil {
 		log.Println(err)
-		return nil, nil
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -121,7 +121,7 @@ func (h *statusPageHandler) getIncidents() ([]incident, error) {
 	rows, err := h.db.Query("SELECT datetime, description FROM incidents ORDER BY datetime DESC")
 	if err != nil {
 		log.Println(err)
-		return nil, nil
+		return nil, err
 	}
 	defer rows.Close()
 
