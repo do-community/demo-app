@@ -46,7 +46,7 @@ func main() {
 	defer db.Close()
 
 	if err = db.Ping(); err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 
 	tpl := template.Must(template.ParseFiles("index.html"))
