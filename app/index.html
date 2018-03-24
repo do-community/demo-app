@@ -13,7 +13,7 @@
         {{ range .Components }}
         <div class="component">
           <span>{{ .Name }}</span>
-          <span>{{ .Status }}</span>
+          <span class="{{ .Status }}">{{ .Status }}</span>
         </div>
         {{ end }}
       </section>

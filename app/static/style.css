@@ -86,7 +86,14 @@ h6 {
 
 .component span + span {
   float: right;
+}
+
+.component span + span.operational {
   color: #2fcc66;
+}
+
+.component span + span.unknown {
+  color: #eaab3d;
 }
 
 .incident {
