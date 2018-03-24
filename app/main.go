@@ -66,8 +66,19 @@ func (h *statusPageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/html")
 
-	components, _ := h.getComponents()
-	incidents, _ := h.getIncidents()
+	components, err := h.getComponents()
+	if err != nil {
+		components = []component{
+			{Name: err.Error(), Status: "unknown"},
+		}
+	}
+
+	incidents, err := h.getIncidents()
+	if err != nil {
+		incidents = []incident{
+			{Date: time.Now(), Description: err.Error()},
+		}
+	}
 
 	data := statusData{
 		Components: components,
