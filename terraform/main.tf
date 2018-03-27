@@ -171,6 +171,26 @@ data "template_file" "app_script" {
       }
 }
 
+data "template_file" "load_gen" {
+    template = "* * * * * root ab -qSd -n $(shuf -i 100-1000 -n 1) -c $(shuf -i 1-10 -n 1) http://$${lb_ip}/ 2>&1 > /dev/null"
+    depends_on = ["digitalocean_loadbalancer.lb"]
+
+      vars {
+        lb_ip = "${digitalocean_loadbalancer.lb.ip}"
+      }
+}
+
+resource null_resource "load_gen" {
+  depends_on = ["digitalocean_loadbalancer.lb"]
+  triggers {
+       template_rendered = "${data.template_file.load_gen.rendered}"
+  }
+
+  provisioner "local-exec" {
+    command = "echo '${data.template_file.load_gen.rendered}' >> /etc/crontab"
+  }
+}
+
 resource null_resource "app_script" {
   depends_on = ["digitalocean_droplet.db"]
   triggers {
