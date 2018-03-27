@@ -17,12 +17,6 @@ wget https://statuspage-demo.nyc3.digitaloceanspaces.com/statuspage-demo.zip
 unzip statuspage-demo.zip -d statuspage-demo
 rm -f statuspage-demo.zip
 cd statuspage-demo
-mkdir -p /root/.aws
-cat > /root/.aws/credentials << EOF
-[DO-SPACES]
-aws_access_key_id = $do_spaces_id
-aws_secret_access_key = $do_spaces_key
-EOF
 cat >> /root/.bashrc << EOF
 export TF_VAR_token=$do_token
 EOF
