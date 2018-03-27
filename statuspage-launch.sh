@@ -2,12 +2,9 @@
 
 export TF_VAR_token=$do_token
 
-apt update
-apt upgrade -y
-apt install -y unzip software-properties-common python-boto3 apache2-utils
 apt-add-repository ppa:ansible/ansible
-apt upgrade -y
-apt install -y ansible
+apt update
+apt install -y unzip software-properties-common python-boto3 apache2-utils ansible
 apt autoremove -y
 ssh-keygen -P "" -f /root/.ssh/id_rsa
 wget https://releases.hashicorp.com/terraform/0.11.3/terraform_0.11.3_linux_amd64.zip -O terraform_0.11.3_linux_amd64.zip
