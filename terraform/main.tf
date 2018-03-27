@@ -153,28 +153,48 @@ resource "digitalocean_firewall" "db" {
 }
 
 data "template_file" "ansible_hosts" {
-    template = "[webservers]\n$${web_ips}\n\n[db]\n$${db_ips}\n"
-    depends_on = ["digitalocean_droplet.web", "digitalocean_droplet.db"]
+  template = "[webservers]\n$${web_ips}\n\n[db]\n$${db_ips}\n"
+  depends_on = ["digitalocean_droplet.web", "digitalocean_droplet.db"]
 
-      vars {
-        web_ips = "${join("\n", digitalocean_droplet.web.*.ipv4_address_private)}"
-        db_ips = "${digitalocean_droplet.db.ipv4_address_private}"
-      }
+  vars {
+    web_ips = "${join("\n", digitalocean_droplet.web.*.ipv4_address_private)}"
+    db_ips = "${digitalocean_droplet.db.ipv4_address_private}"
+  }
 }
 
 data "template_file" "app_script" {
-    template = "#!/bin/sh\nMYSQL_DATABASE=statuspage MYSQL_HOST=$${db_ip} MYSQL_PORT=3306 MYSQL_PASSWORD=statuspage MYSQL_USER=statuspage go run main.go &"
-    depends_on = ["digitalocean_droplet.db"]
+  template = "#!/bin/sh\nMYSQL_DATABASE=statuspage MYSQL_HOST=$${db_ip} MYSQL_PORT=3306 MYSQL_PASSWORD=statuspage MYSQL_USER=statuspage go run main.go &"
+  depends_on = ["digitalocean_droplet.db"]
 
-      vars {
-        db_ip = "${digitalocean_droplet.db.ipv4_address_private}"
-      }
+  vars {
+    db_ip = "${digitalocean_droplet.db.ipv4_address_private}"
+  }
+}
+
+data "template_file" "load_gen" {
+  template = "* * * * * root ab -qSd -n $(shuf -i 100-1000 -n 1) -c $(shuf -i 1-10 -n 1) http://$${lb_ip}/ 2>&1 > /dev/null"
+  depends_on = ["digitalocean_loadbalancer.lb"]
+
+  vars {
+    lb_ip = "${digitalocean_loadbalancer.lb.ip}"
+  }
+}
+
+resource null_resource "load_gen" {
+  depends_on = ["digitalocean_loadbalancer.lb"]
+  triggers {
+    template_rendered = "${data.template_file.load_gen.rendered}"
+  }
+
+  provisioner "local-exec" {
+    command = "echo '${data.template_file.load_gen.rendered}' >> /etc/crontab"
+  }
 }
 
 resource null_resource "app_script" {
   depends_on = ["digitalocean_droplet.db"]
   triggers {
-       template_rendered = "${data.template_file.app_script.rendered}"
+    template_rendered = "${data.template_file.app_script.rendered}"
   }
 
   provisioner "local-exec" {
@@ -185,7 +205,7 @@ resource null_resource "app_script" {
 resource null_resource "ansible_prep" {
   depends_on = ["digitalocean_droplet.web", "digitalocean_droplet.db"]
   triggers {
-       template_rendered = "${data.template_file.ansible_hosts.rendered}"
+    template_rendered = "${data.template_file.ansible_hosts.rendered}"
   }
 
   provisioner "local-exec" {
