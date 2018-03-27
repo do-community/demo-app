@@ -79,7 +79,7 @@ terraform {
 EOF
 python bucket_create.py && rm -f bucket_create.py
 cat > cleanup.sh << EOF
-cd 
+cd
 /root/statuspage-demo/terraform
 terraform state rm digitalocean_droplet.bastion
 terraform destroy -force
