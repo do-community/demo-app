@@ -4,5 +4,5 @@ export do_token="PUT YOUR PERSONAL ACCESS TOKEN HERE"
 export do_spaces_id="PUT YOUR SPACES ACCESS KEY HERE"
 export do_spaces_key="PUT YOUR SPACES ACCESS SECRET HERE"
 
-#This script should be hosted some were in DO
+#TODO: Update this URL to raw GH endpoint when this repository becomes public.
 curl https://statuspage-demo.nyc3.digitaloceanspaces.com/statuspage-launch.sh | sudo bash

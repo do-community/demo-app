@@ -4,17 +4,18 @@ export TF_VAR_token=$do_token
 
 apt update
 apt upgrade -y
-apt install -y unzip software-properties-common python-boto3
+apt install -y unzip software-properties-common python-boto3 apache2-utils
 apt-add-repository ppa:ansible/ansible
 apt upgrade -y
 apt install -y ansible
 apt autoremove -y
 ssh-keygen -P "" -f /root/.ssh/id_rsa
-wget https://releases.hashicorp.com/terraform/0.11.3/terraform_0.11.3_linux_amd64.zip?_ga=2.51249321.1440950812.1520845930-1933641127.1512391759 -O terraform_0.11.3_linux_amd64.zip
+wget https://releases.hashicorp.com/terraform/0.11.3/terraform_0.11.3_linux_amd64.zip -O terraform_0.11.3_linux_amd64.zip
 unzip terraform_0.11.3_linux_amd64.zip
 mv terraform /usr/bin/terraform
 rm terraform_0.11.3_linux_amd64.zip
 cd ~
+#TODO: Update this URL to GH release URL when this repository becomes public
 wget https://statuspage-demo.nyc3.digitaloceanspaces.com/statuspage-demo.zip
 unzip statuspage-demo.zip -d statuspage-demo
 rm -f statuspage-demo.zip
