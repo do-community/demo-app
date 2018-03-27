@@ -1,0 +1,77 @@
+---
+
+- hosts: db
+  gather_facts: false
+  become: yes
+
+  pre_tasks:
+  - name: Wait 60 seconds for port 22 to become open and contain "OpenSSH"
+    wait_for:
+      port: 22
+      host: '{{ inventory_hostname }}'
+      search_regex: OpenSSH
+      delay: 30
+      connect_timeout: 30
+    vars:
+      ansible_connection: local
+  - name: Install python for Ansible
+    raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+    changed_when: False
+
+  tasks:
+  - name: Install packages
+    apt:
+      name: "{{ item }}"
+      state: present
+    with_items:
+      - mysql-server
+      - python-mysqldb
+
+  - name: Start mysql service
+    service:
+      enabled: yes
+      name: mysql
+      state: started
+
+  - fetch:
+      src: /root/.digitalocean_password
+      dest: /root/.digitalocean_password
+      flat: yes
+
+  - ini_file:
+      dest: '/root/.my.cnf'
+      section: client
+      option: user
+      value: root
+      mode: 0600
+
+  - ini_file:
+      dest: '/root/.my.cnf'
+      section: client
+      option: password
+      value: "{{ lookup('ini', 'root_mysql_pass type=properties file=/root/.digitalocean_password') }}"
+      mode: 0600
+
+  - copy:
+      src: /root/statuspage-demo/ansible/files/statuspage-db.sql
+      dest: /root/statuspage-db.sql
+      owner: root
+      group: root
+      mode: 0644
+
+  - name: Create statuspage database
+    mysql_db:
+      name: statuspage
+      state: present
+
+  - name: Import statuspage database dump
+    mysql_db:
+      state: import
+      name: all
+      target: /root/statuspage-db.sql
+
+  - mysql_user:
+      name: statuspage
+      password: statuspage
+      priv: '*.*:ALL,GRANT'
+      state: present
