@@ -38,7 +38,7 @@ Before we create this Droplet, we need to create a DigitalOcean "personal access
 
 Go ahead and create one of each. Take note of the token/keys - we'll need these later.
 
-**Note:** the personal access token will be one token. The spaces access key will have two parts - a key and a secret key.
+_**Note:** the personal access token will be one token. The spaces access key will have two parts - a key and a secret key._
 
 Now we're ready to create our bastion Droplet. Go to the "Droplets" tab on the DigitalOcean control panel.
 
@@ -68,7 +68,7 @@ export do_spaces_key="PUT YOUR SPACES ACCESS SECRET HERE"
 curl https://statuspage-demo.nyc3.digitaloceanspaces.com/statuspage-launch.sh | bash
 ```
 
-**Note:** we do not recommend piping scripts from the internet to `bash` as a common practice. This is to keep the copy/paste content at a minimum so we can focus on getting our application up.
+_**Note:** we do not recommend piping scripts from the internet to `bash` as a common practice. This is to keep the copy/paste content at a minimum so we can focus on getting our application up._
 
 * Under "Add your SSH keys", select an existing SSH key or click the "New SSH Key" button and enter a public key. This should be a public SSH key of your own. You will need this in order to connect to the bastion host.
 
