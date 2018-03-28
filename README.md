@@ -1,14 +1,14 @@
-# Digital Ocean Demo App
+# DigitalOcean Demo App
 
 It can be difficult to get acquainted with a new cloud services platform. We find that the easiest way to get up and running is to deploy an application!
 
-This repository contains a demo application and automation to launch it on your own Digital Ocean account. This will allow you to get a feel for what it's like to run code on Digital Ocean.
+This repository contains a demo application and automation to launch it on your own DigitalOcean account. This will allow you to get a feel for what it's like to run code on DigitalOcean.
 
 ## What's Involved?
 
 ### The Application
 
-The actual application we'll be deploying is a "status page". A status page is a web page that shows status information for another product or service. For example, if you want to check on the status of Digital Ocean, you could go to our status page: https://status.digitalocean.com/.
+The actual application we'll be deploying is a "status page". A status page is a web page that shows status information for another product or service. For example, if you want to check on the status of DigitalOcean, you could go to our status page: https://status.digitalocean.com/.
 
 The status page we're deploying isn't quite as full-featured, but perhaps it could be someday :P
 
