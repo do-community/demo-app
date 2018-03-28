@@ -75,4 +75,4 @@
     command: "go get github.com/go-sql-driver/mysql"
 
   - name: run statuspage-demo app
-    command: "sh /var/www/app/run.sh"
+    command: "cd /var/www/app && run.sh"
