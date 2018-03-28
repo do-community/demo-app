@@ -30,7 +30,6 @@
     template:
       src: /root/statuspage-demo/ansible/files/nginx.default.j2
       dest: /etc/nginx/sites-enabled/default
-      validate: service nginx configtest
 
   - name: Start nginx service
     service:
