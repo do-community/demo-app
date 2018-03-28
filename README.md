@@ -87,3 +87,29 @@ ssh root@<bastion-ip>
 
 tail -f /var/log/cloud-init-output.log
 ```
+
+## Destroy the Application
+
+While it's really cool that you have a running application on your DigitalOcean account, you should probably tear it down. Though the resources it uses are relatively inexpensive, it _does_ actually cost money!
+
+When we launched the application, we created a cleanup script on the bastion server. To destroy your status page application infrastructure, connect to your bastion server and execute it:
+
+```
+ssh root@<bastion-ip>
+
+./statuspage-demo/cleanup.sh
+```
+
+All that will be left at this point is the bastion server itself. To destroy the bastion server,
+
+* Navigate to the "Droplets" tab on the DigitalOcean control panel.
+
+* Click "More" on the right side of the Droplet to expose its dropdown menu.
+
+* Click "Destroy" at the bottom of the menu.
+
+* Under "Destroy droplet", click the "Destroy" button.
+
+* Click "Confirm".
+
+That's it! Our beloved status page is completely destroyed and we're back to where we started. But at least you know what you're doing now! You're ready to deploy your own application on DigitalOcean :sunglasses:
