@@ -5,4 +5,4 @@ export do_spaces_id="PUT YOUR SPACES ACCESS KEY HERE"
 export do_spaces_key="PUT YOUR SPACES ACCESS SECRET HERE"
 
 #TODO: Update this URL to raw GH endpoint when this repository becomes public.
-curl https://statuspage-demo.nyc3.digitaloceanspaces.com/statuspage-launch.sh | sudo bash
+curl https://statuspage-demo.nyc3.digitaloceanspaces.com/statuspage-launch.sh | bash
