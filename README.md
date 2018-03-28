@@ -34,9 +34,7 @@ We're going to do this by creating a single Droplet with the DigitalOcean contro
 
 Before we create this Droplet, we need to create a DigitalOcean "personal access token" and "spaces access keys". This can be done from the "API" tab of the DigitalOcean Control Panel.
 
-```
-SCREEN SHOT OF CONTROL PANEL API TAB
-```
+![DigitalOcean Control Panel API Tab](./README.ss-api.png)
 
 Go ahead and create one of each. Take note of the tokens/keys - we'll need these later.
 
@@ -44,9 +42,7 @@ Note: the personal access token will be one token. The spaces access key will ha
 
 Now we're ready to create our bastion Droplet. Go to the "Droplets" tab on the DigitalOcean control panel.
 
-```
-SCREEN SHOT OF CONTROL PANEL DROPLETS TAB
-```
+![DigitalOcean Control Panel Droplets Tab](./README.ss-droplets.png)
 
 * Click "Create Droplet".
 
