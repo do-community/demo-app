@@ -38,7 +38,7 @@ Before we create this Droplet, we need to create a DigitalOcean "personal access
 
 Go ahead and create one of each. Take note of the tokens/keys - we'll need these later.
 
-Note: the personal access token will be one token. The spaces access key will have two parts - a key and a secret key.
+**Note:** the personal access token will be one token. The spaces access key will have two parts - a key and a secret key.
 
 Now we're ready to create our bastion Droplet. Go to the "Droplets" tab on the DigitalOcean control panel.
 
