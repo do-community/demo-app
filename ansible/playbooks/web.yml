@@ -69,5 +69,10 @@
   - name: Install go mysql go-sql-driver
     command: "go get github.com/go-sql-driver/mysql"
 
+  - name: Chmod run.sh
+    file:
+      path: /var/www/app/run.sh
+      mode: 0755
+
   - name: run statuspage-demo app
-    command: "cd /var/www/app && run.sh"
+    command: "/var/www/app/run.sh"

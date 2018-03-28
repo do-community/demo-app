@@ -27,7 +27,8 @@ resource "digitalocean_volume" "db" {
 
 #Create database droplet
 resource "digitalocean_droplet" "db" {
-  image  = "mysql-16-04"
+  # image  = "mysql-16-04"
+  image  = "ubuntu-16-04-x64"
   name   = "statuspage-db"
   region = "${var.region}"
   size   = "1gb"
@@ -37,6 +38,18 @@ resource "digitalocean_droplet" "db" {
   private_networking = true
 
   volume_ids = ["${digitalocean_volume.db.id}"]
+
+  provisioner "remote-exec" {
+    inline = [
+      "pgrep apt && sleep 30",
+      "apt -y update",
+      "apt-get install -y python-minimal",
+    ]
+    connection {
+      host = "${self.ipv4_address_private}"
+      private_key = "${file(var.ssh_key_path)}"
+    }
+  }
 }
 
 #Create Web-Server droplets
@@ -51,8 +64,19 @@ resource "digitalocean_droplet" "web" {
   monitoring = true
   ssh_keys = ["${digitalocean_ssh_key.default.id}"]
   private_networking = true
-}
 
+  provisioner "remote-exec" {
+    inline = [
+      "pgrep apt && sleep 30",
+      "apt -y update",
+      "apt-get install -y python-minimal",
+    ]
+    connection {
+      host = "${self.ipv4_address_private}"
+      private_key = "${file(var.ssh_key_path)}"
+    }
+  }
+}
 
 #Create Loadbalancer
 resource "digitalocean_loadbalancer" "lb" {
@@ -171,7 +195,7 @@ data "template_file" "ansible_hosts" {
 }
 
 data "template_file" "app_script" {
-  template = "#!/bin/sh\nMYSQL_DATABASE=statuspage MYSQL_HOST=$${db_ip} MYSQL_PORT=3306 MYSQL_PASSWORD=statuspage MYSQL_USER=statuspage go run main.go &"
+  template = "#!/bin/sh\ncd /var/www/app;\nMYSQL_DATABASE=statuspage MYSQL_HOST=$${db_ip} MYSQL_PORT=3306 MYSQL_PASSWORD=statuspage MYSQL_USER=statuspage go run main.go &"
   depends_on = ["digitalocean_droplet.db"]
 
   vars {
@@ -181,7 +205,7 @@ data "template_file" "app_script" {
 
 data "template_file" "load_gen" {
   template = "* * * * * root ab -qSd -n $(shuf -i 100-1000 -n 1) -c $(shuf -i 1-10 -n 1) http://$${lb_ip}/ 2>&1 > /dev/null"
-  depends_on = ["digitalocean_loadbalancer.lb"]
+  depends_on = ["digitalocean_loadbalancer.lb", "null_resource.ansible_web"]
 
   vars {
     lb_ip = "${digitalocean_loadbalancer.lb.ip}"
@@ -222,7 +246,7 @@ resource null_resource "ansible_prep" {
 }
 
 resource null_resource "ansible_web" {
-  depends_on = ["null_resource.ansible_prep", "digitalocean_firewall.web"]
+  depends_on = ["null_resource.ansible_prep", "digitalocean_firewall.web", "null_resource.app_script"]
 
   provisioner "local-exec" {
     command = "cd ../ansible && ansible-playbook playbooks/web.yml"

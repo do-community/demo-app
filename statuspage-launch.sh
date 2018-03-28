@@ -37,7 +37,10 @@ else:
 EOF
 cat > bucket_delete.py << EOF
 import boto3
-from botocore.client import Config
+s3 = boto3.resource('s3',
+                        endpoint_url='https://nyc3.digitaloceanspaces.com',
+                        aws_access_key_id='$do_spaces_id',
+                        aws_secret_access_key='$do_spaces_key')
 session = boto3.session.Session()
 client = session.client('s3',
                         endpoint_url='https://nyc3.digitaloceanspaces.com',
@@ -46,13 +49,16 @@ client = session.client('s3',
 response = client.list_buckets()
 spaces = [space['Name'] for space in response['Buckets']]
 if 'tf-states' in spaces:
-  client.delete_bucket(Bucket='tf-states')
+  tf_bucket = s3.Bucket('tf-states')
+  for key in tf_bucket.objects.all():
+    key.delete()
+  tf_bucket.delete()
 EOF
 cat > terraform/remote.tf << EOF
 terraform {
   backend "s3" {
     bucket = "tf-states"
-    key    = "status-page-demo/terraform.tfstate"
+    key    = "status-page-demo/$(curl -s http://169.254.169.254/metadata/v1/id)/terraform.tfstate"
     region = "us-east-1"
     endpoint = "https://nyc3.digitaloceanspaces.com"
     access_key = "$do_spaces_id"
