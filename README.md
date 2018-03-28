@@ -6,8 +6,6 @@ This repository contains a demo application and automation to launch it on your 
 
 ## What's Involved?
 
-There are three main components that come into play:
-
 ### The Application
 
 The actual application we'll be deploying is a "status page". A status page is a web page that shows status information for another product or service. For example, if you want to check on the status of Digital Ocean, you could go to our status page: https://status.digitalocean.com/.
