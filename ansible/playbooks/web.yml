@@ -12,67 +12,52 @@
     changed_when: False
 
   tasks:
-  - name: Install packages
-    apt:
-      name: "{{ item }}"
-      state: present
-    with_items:
-      - nginx
-
-  - name: Update nginx config
-    template:
-      src: /root/statuspage-demo/ansible/files/nginx.default.j2
-      dest: /etc/nginx/sites-enabled/default
-
-  - name: Start nginx service
-    service:
-      enabled: yes
-      name: nginx
-      state: started
-
-  - name: upload application
-    copy:
-      src: "/root/statuspage-demo/app"
-      dest: "/var/www"
-      mode: 0644
-
-  - name: golang - check already installed
+  - name: GoLang - Check already installed
     stat:
       path: "/usr/local/go/bin/go"
     register: golang_binary
 
-  - name: golang - check download cached
+  - name: GoLang - Check download cached
     stat:
       path: "/tmp/go1.8.1.linux-amd64.tar.gz"
     register: golang_archive
     when: not golang_binary.stat.exists
 
-  - name: golang - download precompiled binaries
+  - name: GoLang - Download precompiled binaries
     get_url:
       url: "https://storage.googleapis.com/golang/go1.8.1.linux-amd64.tar.gz"
       dest: "/tmp/go1.8.1.linux-amd64.tar.gz"
     when: not golang_binary.stat.exists and not golang_archive.stat.exists
 
-  - name: golang - install binaries
+  - name: GoLang - Install binaries
     unarchive:
       src: "/tmp/go1.8.1.linux-amd64.tar.gz"
       dest: "/usr/local"
       copy: "no"
     when: not golang_binary.stat.exists
 
-  - name: golang - create system-wide symlinks
+  - name: GoLang - Create system-wide symlinks
     file:
       src: "/usr/local/go/bin/go"
       dest: "/usr/local/bin/go"
       state: "link"
 
-  - name: Install go mysql go-sql-driver
+  - name: GoLang - Install go mysql go-sql-driver
     command: "go get github.com/go-sql-driver/mysql"
 
-  - name: Chmod run.sh
-    file:
-      path: /var/www/app/run.sh
-      mode: 0755
+  - name: Deploy - Build statuspage-demo app
+    command: "go build"
+    args:
+      chdir: /var/www/app
 
-  - name: run statuspage-demo app
-    command: "/var/www/app/run.sh"
+  - name: Deploy - Install app service
+    template: 
+      src: files/statuspage-demo.service.j2
+      dest: /lib/systemd/system/statuspage-demo.service
+
+  - name: Deploy - Start statuspage-demo app
+    systemd:
+      name: statuspage-demo
+      state: started
+      enabled: True
+      daemon_reload: yes

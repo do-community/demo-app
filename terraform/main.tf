@@ -27,7 +27,6 @@ resource "digitalocean_volume" "db" {
 
 #Create database droplet
 resource "digitalocean_droplet" "db" {
-  # image  = "mysql-16-04"
   image  = "ubuntu-16-04-x64"
   name   = "statuspage-db"
   region = "${var.region}"
@@ -195,7 +194,7 @@ data "template_file" "ansible_hosts" {
 }
 
 data "template_file" "app_script" {
-  template = "#!/bin/sh\ncd /var/www/app;\nMYSQL_DATABASE=statuspage MYSQL_HOST=$${db_ip} MYSQL_PORT=3306 MYSQL_PASSWORD=statuspage MYSQL_USER=statuspage go run main.go &"
+  template = "${file("statuspage-demo.service.tpl")}"
   depends_on = ["digitalocean_droplet.db"]
 
   vars {
@@ -230,7 +229,7 @@ resource null_resource "app_script" {
   }
 
   provisioner "local-exec" {
-    command = "cd ../app && echo '${data.template_file.app_script.rendered}' > run.sh && chmod +x run.sh"
+    command = "cd ../ansible/files && echo '${data.template_file.app_script.rendered}' > statuspage-demo.service.j2"
   }
 }
 

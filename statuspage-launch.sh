@@ -20,6 +20,7 @@ cd statuspage-demo
 cat >> /root/.bashrc << EOF
 export TF_VAR_token=$do_token
 EOF
+export bastion_id=$(curl -s http://169.254.169.254/metadata/v1/id)
 cat > bucket_create.py << EOF
 import boto3
 from botocore.client import Config
@@ -30,10 +31,10 @@ client = session.client('s3',
                         aws_secret_access_key='$do_spaces_key')
 response = client.list_buckets()
 spaces = [space['Name'] for space in response['Buckets']]
-if 'tf-states' in spaces:
+if 'tf-states-$bastion_id' in spaces:
   print("Spaces List: %s" % spaces)
 else:
-  client.create_bucket(Bucket='tf-states')
+  client.create_bucket(Bucket='tf-states-$bastion_id')
 EOF
 cat > bucket_delete.py << EOF
 import boto3
@@ -48,8 +49,8 @@ client = session.client('s3',
                         aws_secret_access_key='$do_spaces_key')
 response = client.list_buckets()
 spaces = [space['Name'] for space in response['Buckets']]
-if 'tf-states' in spaces:
-  tf_bucket = s3.Bucket('tf-states')
+if 'tf-states-$bastion_id' in spaces:
+  tf_bucket = s3.Bucket('tf-states-$bastion_id')
   for key in tf_bucket.objects.all():
     key.delete()
   tf_bucket.delete()
@@ -57,8 +58,8 @@ EOF
 cat > terraform/remote.tf << EOF
 terraform {
   backend "s3" {
-    bucket = "tf-states"
-    key    = "status-page-demo/$(curl -s http://169.254.169.254/metadata/v1/id)/terraform.tfstate"
+    bucket = "tf-states-$bastion_id"
+    key    = "status-page-demo/terraform.tfstate"
     region = "us-east-1"
     endpoint = "https://nyc3.digitaloceanspaces.com"
     access_key = "$do_spaces_id"
@@ -80,5 +81,5 @@ EOF
 chmod +x cleanup.sh
 cd terraform
 terraform init -backend
-terraform import digitalocean_droplet.bastion $(curl -s http://169.254.169.254/metadata/v1/id)
+terraform import digitalocean_droplet.bastion $bastion_id
 terraform apply -auto-approve
