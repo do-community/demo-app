@@ -68,6 +68,8 @@ export do_spaces_key="PUT YOUR SPACES ACCESS SECRET HERE"
 curl https://statuspage-demo.nyc3.digitaloceanspaces.com/statuspage-launch.sh | bash
 ```
 
+**Note:** we do not recommend piping scripts from the internet to `bash` as a common practice. This is to keep the copy/paste content at a minimum so we can focus on getting our application up.
+
 * Under "Add your SSH keys", select an existing SSH key or click the "New SSH Key" button and enter a public key. This should be a public SSH key of your own. You will need this in order to connect to the bastion host.
 
 * Under "Finalize and create" and "Choose a hostname", give your Droplet a more appropriate name - "bastion" would be a pretty good one.
