@@ -94,6 +94,10 @@ resource "digitalocean_firewall" "web" {
       port_range       = "22"
       source_addresses = ["${digitalocean_droplet.bastion.*.ipv4_address_private}"]
     },
+    {
+      protocol         = "icmp"
+      source_addresses = ["${digitalocean_droplet.bastion.*.ipv4_address_private}"]
+    },
   ]
 
   outbound_rule = [
@@ -129,6 +133,10 @@ resource "digitalocean_firewall" "db" {
     {
       protocol         = "tcp"
       port_range       = "22"
+      source_addresses = ["${digitalocean_droplet.bastion.*.ipv4_address_private}"]
+    },
+    {
+      protocol         = "icmp"
       source_addresses = ["${digitalocean_droplet.bastion.*.ipv4_address_private}"]
     },
   ]
