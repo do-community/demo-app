@@ -46,8 +46,6 @@ client = session.client('s3',
 response = client.list_buckets()
 spaces = [space['Name'] for space in response['Buckets']]
 if 'tf-states' in spaces:
-  print("Spaces List: %s" % spaces)
-else:
   client.delete_bucket(Bucket='tf-states')
 EOF
 cat > terraform/remote.tf << EOF
