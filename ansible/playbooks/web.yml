@@ -10,10 +10,8 @@
       port: 22
       host: '{{ inventory_hostname }}'
       search_regex: OpenSSH
-      delay: 30
-      connect_timeout: 30
-    vars:
-      ansible_connection: local
+      delay: 10
+    connection: local
   - name: Install python for Ansible
     raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
     changed_when: False
