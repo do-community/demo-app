@@ -66,11 +66,10 @@ terraform {
 EOF
 python bucket_create.py && rm -f bucket_create.py
 cat > cleanup.sh << EOF
-cd
-/root/statuspage-demo/terraform
+cd /root/statuspage-demo/terraform
 terraform state rm digitalocean_droplet.bastion
 terraform destroy -force
-python bucket_delete.py
+python /root/statuspage-demo/bucket_delete.py
 EOF
 chmod +x cleanup.sh
 cd terraform
