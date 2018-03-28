@@ -25,7 +25,6 @@ import boto3
 from botocore.client import Config
 session = boto3.session.Session()
 client = session.client('s3',
-                        region_name='us-east-1',
                         endpoint_url='https://nyc3.digitaloceanspaces.com',
                         aws_access_key_id='$do_spaces_id',
                         aws_secret_access_key='$do_spaces_key')
@@ -41,7 +40,6 @@ import boto3
 from botocore.client import Config
 session = boto3.session.Session()
 client = session.client('s3',
-                        region_name='us-east-1',
                         endpoint_url='https://nyc3.digitaloceanspaces.com',
                         aws_access_key_id='$do_spaces_id',
                         aws_secret_access_key='$do_spaces_key')
