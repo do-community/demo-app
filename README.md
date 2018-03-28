@@ -1,16 +1,91 @@
-# digital-ocean-demo-app
+# Digital Ocean Demo App
 
-1) Go to `API` tab and create Personal and Spaces access tokens/keys
-    We will need them later.
-2) Go to `Droplets` tab and create new droplet(aka VM) 
-    That's will be our jumphost(aka bastion) to access/manipulate our infrastructure
-    2a) OS: ubuntu
-    2b) Check `private network` and `user data` checkboxes
-    2c) Copy-Paste from user_data file to `user data` input field
-    2d) Edit Personal and Spaces access tokens/keys
-    2e) Name your new droplet as "bastion"
-    2f) Launch your Droplet
-3) To monitor how Demo infrastructure creating process is going on. Login to our bastion droplet and enter following command:
-```bash
+It can be difficult to get acquainted with a new cloud services platform. We find that the easiest way to get up and running is to deploy an application!
+
+This repository contains a demo application and automation to launch it on your own Digital Ocean account. This will allow you to get a feel for what it's like to run code on Digital Ocean.
+
+## What's Involved?
+
+There are three main components that come into play:
+
+### The Application
+
+The actual application we'll be deploying is a "status page". A status page is a web page that shows status information for another product or service. For example, if you want to check on the status of Digital Ocean, you could go to our status page: https://status.digitalocean.com/.
+
+The status page we're deploying is quite as full-featured, but perhaps it could be someday :P
+
+The application code can be found in the [app](./app/) directory. It's written in [Go](https://golang.org/) and uses [MySQL](https://www.mysql.com/) as its database.
+
+### [Infrastructure As Code (IaC)](https://en.wikipedia.org/wiki/Infrastructure_as_Code)
+
+This is the code that defines our DigitalOcean cloud resources! In this project, we've defined our infrastructure using [Terraform](https://www.terraform.io/). Terraform has a great [provider for DigitalOcean](https://www.terraform.io/docs/providers/do/index.html). The Terraform configuration can be found in the [terraform](./terraform/) directory. In [main.tf](./terraform/main.tf), you'll find all resources involved in running our status page application.
+
+### Automated Provisioning
+
+Provisioning is the process of bringing infrastructure components to a desired state - which in our case involves installing software and running services on DigitalOcean [Droplets](https://www.digitalocean.com/products/droplets/). We need to provision a database server with MySQL and web servers with our status page application. We're using [Ansible](https://www.ansible.com/) for automating the necessary provisioning. The database server and web servers require different instructions to be provisioned appropriately. Ansible organizes sets of instructions as "playbooks". Our Ansible code can be found in the [ansible](./ansible/) directory.
+
+### Tying It All Together
+
+Everything is tied together by a launch script ([statuspage-launch.sh](./statuspage-launch.sh)). This runs our IaC and provisioning code in the necessary order. The next section explains how to run it!
+
+## Run the Application!
+
+Now that you have an understanding of the technology that will come into play, let's run the application!
+
+We're going to do this by creating a single Droplet with the DigitalOcean control panel. This Droplet is going to be our [bastion host](https://en.wikipedia.org/wiki/Bastion_host). This type of host is traditionally referenced in infrastructure designs as a means for implementing security measures. A similar term for such a host is "[jump server](https://en.wikipedia.org/wiki/Jump_server)". In our case, we're using it as an SSH gateway and also the coordinating system for building out the rest of our infrastructure.
+
+Before we create this Droplet, we need to create a DigitalOcean "personal access token" and a "spaces access keys". This can be done from the "API" tab of the DigitalOcean Control Panel.
+
+```
+SCREEN SHOT OF CONTROL PANEL API TAB
+```
+
+Go ahead and create one of each. Take note of the associated tokens/keys.
+
+Note: the personal access token will be one token. The spaces access key will have two parts - a key and a secret key.
+
+Now we're ready to create our bastion Droplet. Go to the "Droplets" tab on the DigitalOcean control panel.
+
+```
+SCREEN SHOT OF CONTROL PANEL DROPLETS TAB
+```
+
+* Click "Create Droplet".
+
+* Under "Choose an image", ensure that "Ubuntu" is selected.
+
+* Under "Choose a size", select the cheapest option.
+
+* Ignore "Add block storage" - we do not need block storage for the bastion host.
+
+* Under "Choose a datacenter region", select the "3" on "New York".
+
+* Under "Select additional options", select the checkboxes for "Private networking" and "User data".
+
+* When you select "User data", a text field will appear. Paste the following code into this text field and update the lines starting with `export` with your personal access token and spaces keys:
+
+```
+#!/bin/bash
+
+export do_token="PUT YOUR PERSONAL ACCESS TOKEN HERE"
+export do_spaces_id="PUT YOUR SPACES ACCESS KEY HERE"
+export do_spaces_key="PUT YOUR SPACES ACCESS SECRET HERE"
+
+curl https://statuspage-demo.nyc3.digitaloceanspaces.com/statuspage-launch.sh | bash
+```
+
+* Under "Add your SSH keys", select an existing SSH key or click "New SSH Key" button and enter a public key. This should be public SSH key of your own. You will need this in order to connect to the bastion host.
+
+* Under "Finalize and create" and "Choose a hostname", give your Droplet a more appropriate name - "bastion" would be a good name.
+
+* Click "Create".
+
+That's about it! You're DigitalOcean infrastructure is now being created!
+
+Once, your Droplet is up, you should be able to SSH to it and monitor the launch progress. This can be done with:
+
+```
+ssh root@<bastion-ip>
+
 tail -f /var/log/cloud-init-output.log
 ```
