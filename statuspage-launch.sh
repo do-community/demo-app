@@ -72,7 +72,7 @@ cd
 /root/statuspage-demo/terraform
 terraform state rm digitalocean_droplet.bastion
 terraform destroy -force
-python bucket_create.py
+python bucket_delete.py
 EOF
 chmod +x cleanup.sh
 cd terraform
