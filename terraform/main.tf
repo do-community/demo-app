@@ -63,12 +63,12 @@ resource "digitalocean_loadbalancer" "lb" {
     entry_port     = 80
     entry_protocol = "http"
 
-    target_port     = 80
+    target_port     = 8080
     target_protocol = "http"
   }
 
   healthcheck {
-    port     = 80
+    port     = 8080
     protocol = "tcp"
   }
 
@@ -86,7 +86,7 @@ resource "digitalocean_firewall" "web" {
   inbound_rule = [
     {
       protocol         = "tcp"
-      port_range       = "80"
+      port_range       = "8080"
       source_load_balancer_uids = ["${digitalocean_loadbalancer.lb.id}"]
     },
     {
