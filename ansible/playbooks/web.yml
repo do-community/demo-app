@@ -5,13 +5,8 @@
   become: yes
 
   pre_tasks:
-  - name: Wait 60 seconds for port 22 to become open and contain "OpenSSH"
-    wait_for:
-      port: 22
-      host: '{{ inventory_hostname }}'
-      search_regex: OpenSSH
-      delay: 10
-    connection: local
+  - name: Wait 600 seconds for target connection to become reachable/usable
+    wait_for_connection:
   - name: Install python for Ansible
     raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
     changed_when: False
