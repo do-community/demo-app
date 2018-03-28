@@ -40,7 +40,7 @@
 
   - name: upload application
     copy:
-      src: "/root/statuspage-demo/app" 
+      src: "/root/statuspage-demo/app"
       dest: "/var/www"
       mode: 0644
 
@@ -75,10 +75,10 @@
       state: "link"
 
   - name: Install go mysql go-sql-driver
-    - command: "go get github.com/go-sql-driver/mysql"
+    command: "go get github.com/go-sql-driver/mysql"
 
   - name: run statuspage-demo app
-    - command: "sh /var/www/app/run.sh"
+    command: "sh /var/www/app/run.sh"
 
 #go get github.com/go-sql-driver/mysql
 #MYSQL_DATABASE=statuspage MYSQL_HOST=10.132.146.193 MYSQL_PORT=3306 MYSQL_PASSWORD=statuspage MYSQL_USER=statuspage go run main.go
