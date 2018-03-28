@@ -78,6 +78,3 @@
 
   - name: run statuspage-demo app
     command: "sh /var/www/app/run.sh"
-
-#go get github.com/go-sql-driver/mysql
-#MYSQL_DATABASE=statuspage MYSQL_HOST=10.132.146.193 MYSQL_PORT=3306 MYSQL_PASSWORD=statuspage MYSQL_USER=statuspage go run main.go
