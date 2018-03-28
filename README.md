@@ -10,7 +10,7 @@ This repository contains a demo application and automation to launch it on your 
 
 The actual application we'll be deploying is a "status page". A status page is a web page that shows status information for another product or service. For example, if you want to check on the status of Digital Ocean, you could go to our status page: https://status.digitalocean.com/.
 
-The status page we're deploying is quite as full-featured, but perhaps it could be someday :P
+The status page we're deploying isn't quite as full-featured, but perhaps it could be someday :P
 
 The application code can be found in the [app](./app/) directory. It's written in [Go](https://golang.org/) and uses [MySQL](https://www.mysql.com/) as its database.
 
@@ -32,13 +32,13 @@ Now that you have an understanding of the technology that will come into play, l
 
 We're going to do this by creating a single Droplet with the DigitalOcean control panel. This Droplet is going to be our [bastion host](https://en.wikipedia.org/wiki/Bastion_host). This type of host is traditionally referenced in infrastructure designs as a means for implementing security measures. A similar term for such a host is "[jump server](https://en.wikipedia.org/wiki/Jump_server)". In our case, we're using it as an SSH gateway and also the coordinating system for building out the rest of our infrastructure.
 
-Before we create this Droplet, we need to create a DigitalOcean "personal access token" and a "spaces access keys". This can be done from the "API" tab of the DigitalOcean Control Panel.
+Before we create this Droplet, we need to create a DigitalOcean "personal access token" and "spaces access keys". This can be done from the "API" tab of the DigitalOcean Control Panel.
 
 ```
 SCREEN SHOT OF CONTROL PANEL API TAB
 ```
 
-Go ahead and create one of each. Take note of the associated tokens/keys.
+Go ahead and create one of each. Take note of the tokens/keys - we'll need these later.
 
 Note: the personal access token will be one token. The spaces access key will have two parts - a key and a secret key.
 
@@ -78,7 +78,7 @@ curl https://statuspage-demo.nyc3.digitaloceanspaces.com/statuspage-launch.sh | 
 
 * Click "Create".
 
-That's about it! You're DigitalOcean infrastructure is now being created!
+That's about it! Your DigitalOcean infrastructure is now being created!
 
 Once, your Droplet is up, you should be able to SSH to it and monitor the launch progress. This can be done with:
 
