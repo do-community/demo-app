@@ -86,6 +86,8 @@ ssh root@<bastion-ip>
 tail -f /var/log/cloud-init-output.log
 ```
 
+After a few minutes, our launch process will have completed! When it does, open your load balancer IP address in a browser and check out your status page!
+
 ## Destroy the Application
 
 While it's really cool that you have a running application on your DigitalOcean account, you should probably tear it down. Though the resources it uses are relatively inexpensive, it _does_ actually cost money!
