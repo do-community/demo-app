@@ -1,0 +1,51 @@
+---
+
+- hosts: localhost
+  gather_facts: false
+
+  tasks:
+
+  - name: Install packages
+    apt: name={{item}} state=present
+    with_items:
+    - apache2-utils
+    - python-boto3
+    - unzip
+
+  - name: Generate SSH key pair
+    command: ssh-keygen -b 2048 -t rsa -f /root/.ssh/id_rsa -q -N ''
+    args:
+      creates: /root/.ssh/id_rsa
+
+  - name: Install Terraform
+    unarchive:
+      src: https://releases.hashicorp.com/terraform/0.11.5/terraform_0.11.5_linux_amd64.zip
+      dest: /usr/local/bin
+      remote_src: True
+    args:
+      creates: /usr/local/bin/terraform
+
+  - name: Install Go
+    unarchive:
+      src: https://dl.google.com/go/go1.10.1.linux-amd64.tar.gz
+      dest: /usr/local
+      remote_src: True
+    args:
+      creates: /usr/local/go
+
+  - name: Symlink Go executables
+    file:
+      src: /usr/local/go/bin/go
+      dest: /usr/local/bin/go
+      state: link
+
+  - name: Get Go application dependencies
+    command: go get github.com/go-sql-driver/mysql
+    args:
+      creates: /root/go/src/github.com/go-sql-driver/mysql
+
+  - name: Build status page app
+    command: go build
+    args:
+      chdir: /root/statuspage-demo/app
+      creates: /root/statuspage-demo/app/app
