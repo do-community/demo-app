@@ -14,7 +14,7 @@ The status page we're deploying isn't quite as full-featured, but perhaps it cou
 
 The application code can be found in the [app](./app/) directory. It's written in [Go](https://golang.org/) and uses [MySQL](https://www.mysql.com/) as its database.
 
-### [Infrastructure As Code (IaC)](https://en.wikipedia.org/wiki/Infrastructure_as_Code)
+### Infrastructure as Code (IaC)
 
 This is the code that defines our DigitalOcean cloud resources! In this project, we've defined our infrastructure using [Terraform](https://www.terraform.io/). Terraform has a great [provider for DigitalOcean](https://www.terraform.io/docs/providers/do/index.html). The Terraform configuration can be found in the [terraform](./terraform/) directory. In [main.tf](./terraform/main.tf), you'll find all resources involved in running our status page application.
 
