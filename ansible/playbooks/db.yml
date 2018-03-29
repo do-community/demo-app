@@ -5,15 +5,8 @@
   become: yes
 
   pre_tasks:
-  - name: Wait 60 seconds for port 22 to become open and contain "OpenSSH"
-    wait_for:
-      port: 22
-      host: '{{ inventory_hostname }}'
-      search_regex: OpenSSH
-      delay: 30
-      connect_timeout: 30
-    vars:
-      ansible_connection: local
+  - name: Wait 600 seconds for target connection to become reachable/usable
+    wait_for_connection:
   - name: Install python for Ansible
     raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
     changed_when: False
@@ -33,24 +26,13 @@
       name: mysql
       state: started
 
-  - fetch:
-      src: /root/.digitalocean_password
-      dest: /root/.digitalocean_password
-      flat: yes
+  - name: Change mysql bind address
+    lineinfile:
+      path: /etc/mysql/mysql.conf.d/mysqld.cnf
+      line: 'bind-address = 0.0.0.0'
 
-  - ini_file:
-      dest: '/root/.my.cnf'
-      section: client
-      option: user
-      value: root
-      mode: 0600
-
-  - ini_file:
-      dest: '/root/.my.cnf'
-      section: client
-      option: password
-      value: "{{ lookup('ini', 'root_mysql_pass type=properties file=/root/.digitalocean_password') }}"
-      mode: 0600
+  - name: Restart mysql
+    service: "name=mysql state=restarted sleep=5"
 
   - copy:
       src: /root/statuspage-demo/ansible/files/statuspage-db.sql

@@ -5,80 +5,59 @@
   become: yes
 
   pre_tasks:
-  - name: Wait 60 seconds for port 22 to become open and contain "OpenSSH"
-    wait_for:
-      port: 22
-      host: '{{ inventory_hostname }}'
-      search_regex: OpenSSH
-      delay: 30
-      connect_timeout: 30
-    vars:
-      ansible_connection: local
+  - name: Wait 600 seconds for target connection to become reachable/usable
+    wait_for_connection:
   - name: Install python for Ansible
     raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
     changed_when: False
 
   tasks:
-  - name: Install packages
-    apt:
-      name: "{{ item }}"
-      state: present
-    with_items:
-      - nginx
-
-  - name: Update nginx config
-    template:
-      src: /root/statuspage-demo/ansible/files/nginx.default.j2
-      dest: /etc/nginx/sites-enabled/default
-      validate: service nginx configtest
-
-  - name: Start nginx service
-    service:
-      enabled: yes
-      name: nginx
-      state: started
-
-  - name: upload application
-    copy:
-      src: "/root/statuspage-demo/app" 
-      dest: "/var/www"
-      mode: 0644
-
-  - name: golang - check already installed
+  - name: GoLang - Check already installed
     stat:
       path: "/usr/local/go/bin/go"
     register: golang_binary
 
-  - name: golang - check download cached
+  - name: GoLang - Check download cached
     stat:
       path: "/tmp/go1.8.1.linux-amd64.tar.gz"
     register: golang_archive
     when: not golang_binary.stat.exists
 
-  - name: golang - download precompiled binaries
+  - name: GoLang - Download precompiled binaries
     get_url:
       url: "https://storage.googleapis.com/golang/go1.8.1.linux-amd64.tar.gz"
       dest: "/tmp/go1.8.1.linux-amd64.tar.gz"
     when: not golang_binary.stat.exists and not golang_archive.stat.exists
 
-  - name: golang - install binaries
+  - name: GoLang - Install binaries
     unarchive:
       src: "/tmp/go1.8.1.linux-amd64.tar.gz"
       dest: "/usr/local"
       copy: "no"
     when: not golang_binary.stat.exists
 
-  - name: golang - create system-wide symlinks
+  - name: GoLang - Create system-wide symlinks
     file:
       src: "/usr/local/go/bin/go"
       dest: "/usr/local/bin/go"
       state: "link"
 
-  - name: Install go mysql go-sql-driver
-    - command: "go get github.com/go-sql-driver/mysql"
+  - name: GoLang - Install go mysql go-sql-driver
+    command: "go get github.com/go-sql-driver/mysql"
 
-  - name: run statuspage-demo app
-    - command: "sh /var/www/app/run.sh"
+  - name: Deploy - Build statuspage-demo app
+    command: "go build"
+    args:
+      chdir: /var/www/app
 
-#go get github.com/go-sql-driver/mysql
-#MYSQL_DATABASE=statuspage MYSQL_HOST=10.132.146.193 MYSQL_PORT=3306 MYSQL_PASSWORD=statuspage MYSQL_USER=statuspage go run main.go
+  - name: Deploy - Install app service
+    template: 
+      src: files/statuspage-demo.service.j2
+      dest: /lib/systemd/system/statuspage-demo.service
+
+  - name: Deploy - Start statuspage-demo app
+    systemd:
+      name: statuspage-demo
+      state: started
+      enabled: True
+      daemon_reload: yes
