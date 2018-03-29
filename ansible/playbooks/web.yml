@@ -1,6 +1,6 @@
 ---
 
-- hosts: webservers
+- hosts: web
   gather_facts: false
   become: yes
 
@@ -51,7 +51,7 @@
       chdir: /var/www/app
 
   - name: Deploy - Install app service
-    template: 
+    template:
       src: files/statuspage-demo.service.j2
       dest: /lib/systemd/system/statuspage-demo.service
 

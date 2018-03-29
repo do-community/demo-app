@@ -184,7 +184,7 @@ resource "digitalocean_firewall" "db" {
 }
 
 data "template_file" "ansible_hosts" {
-  template = "[webservers]\n$${web_ips}\n\n[db]\n$${db_ips}\n"
+  template = "[web]\n$${web_ips}\n\n[db]\n$${db_ips}\n"
   depends_on = ["digitalocean_droplet.web", "digitalocean_droplet.db"]
 
   vars {
