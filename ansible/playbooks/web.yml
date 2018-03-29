@@ -9,50 +9,13 @@
     wait_for_connection:
 
   tasks:
-  - name: GoLang - Check already installed
-    stat:
-      path: "/usr/local/go/bin/go"
-    register: golang_binary
 
-  - name: GoLang - Check download cached
-    stat:
-      path: "/tmp/go1.8.1.linux-amd64.tar.gz"
-    register: golang_archive
-    when: not golang_binary.stat.exists
-
-  - name: GoLang - Download precompiled binaries
-    get_url:
-      url: "https://storage.googleapis.com/golang/go1.8.1.linux-amd64.tar.gz"
-      dest: "/tmp/go1.8.1.linux-amd64.tar.gz"
-    when: not golang_binary.stat.exists and not golang_archive.stat.exists
-
-  - name: GoLang - Install binaries
-    unarchive:
-      src: "/tmp/go1.8.1.linux-amd64.tar.gz"
-      dest: "/usr/local"
-      copy: "no"
-    when: not golang_binary.stat.exists
-
-  - name: GoLang - Create system-wide symlinks
-    file:
-      src: "/usr/local/go/bin/go"
-      dest: "/usr/local/bin/go"
-      state: "link"
-
-  - name: GoLang - Install go mysql go-sql-driver
-    command: "go get github.com/go-sql-driver/mysql"
-
-  - name: Deploy - Build statuspage-demo app
-    command: "go build"
-    args:
-      chdir: /var/www/app
-
-  - name: Deploy - Install app service
+  - name: Create systemd service configuration
     template:
-      src: files/statuspage-demo.service.j2
+      src: templates/statuspage-demo.service.j2
       dest: /lib/systemd/system/statuspage-demo.service
 
-  - name: Deploy - Start statuspage-demo app
+  - name: Start statuspage-demo systemd service
     systemd:
       name: statuspage-demo
       state: started

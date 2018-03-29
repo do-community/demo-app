@@ -1,0 +1,15 @@
+[Unit]
+Description=Statuspage Demo
+After=network.target
+
+[Service]
+Environment=MYSQL_DATABASE=statuspage
+Environment=MYSQL_HOST={{ hostvars['db'][0] }}
+Environment=MYSQL_PORT=3306
+Environment=MYSQL_PASSWORD=statuspage
+Environment=MYSQL_USER=statuspage
+WorkingDirectory=/opt/statuspage-demo/
+ExecStart=/opt/statuspage-demo/app
+
+[Install]
+WantedBy=default.target
