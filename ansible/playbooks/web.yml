@@ -7,9 +7,6 @@
   pre_tasks:
   - name: Wait 600 seconds for target connection to become reachable/usable
     wait_for_connection:
-  - name: Install python for Ansible
-    raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
-    changed_when: False
 
   tasks:
   - name: GoLang - Check already installed
