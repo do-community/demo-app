@@ -109,9 +109,11 @@ If we click one of our Droplets, it will take us to its Graphs view for the Drop
 
 ![DigitalOcean Control Panel Droplet](./README.ss-droplet.png)
 
-Because we've enabled monitoring on our Droplets, we get some really great graphs right on our control panel. In addition to graphs, having monitoring enabled allows us to create alerting policies to receive notifications when system metrics cross thresholds of our choosing. Alerting policies can be set up on the [Monitoring tab](https://cloud.digitalocean.com/monitors) of the Control Panel.
+Because we've enabled monitoring on our Droplets, we get some really great graphs right on the control panel. You'll probably the system metrics are a bit more volatile than you'd expect for infrastructure running an application that's no one's actually using. This is because we've added a job to the bastion server's crontab to send requests to your load balancer. Check the `/etc/crontab` file on your bastion server so see exactly what it's doing.
 
-Be sure to also explore your newly created [space](https://cloud.digitalocean.com/spaces), [load balancer](https://cloud.digitalocean.com/networking/load_balancers), and [firewalls](https://cloud.digitalocean.com/networking/firewalls).
+In addition to graphs, having monitoring enabled allows us to create alerting policies to receive notifications when system metrics cross thresholds of our choosing. Alerting policies can be set up on the [Monitoring tab](https://cloud.digitalocean.com/monitors) of the Control Panel.
+
+Be sure to also explore your newly created [space](https://cloud.digitalocean.com/spaces), [load balancer](https://cloud.digitalocean.com/networking/load_balancers), and [firewalls](https://cloud.digitalocean.com/networking/firewalls)!
 
 ## Destroy the Application
 
