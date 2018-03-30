@@ -117,12 +117,14 @@ Be sure to also explore your newly created [space](https://cloud.digitalocean.co
 
 While it's really cool that you have a running application on your DigitalOcean account, you should probably tear it down. Though the resources it uses are relatively inexpensive, it _does_ actually cost money!
 
-When we launched the application, we created a cleanup script on the bastion server. To destroy your status page application infrastructure, connect to your bastion server and execute it:
+When we launched the application, we copied a cleanup script onto the bastion server - [statuspage-destroy.sh](./statuspage-destroy.sh). If you look at the script, you'll see that the destruction is coordinated with Terraform. Terraform knows of all resources it originally created through its state file - which we've stored in DigitalOcean Spaces. It will not affect any other resourses associated with your account.
+
+When you're ready to destroy your status page application, you must connect to your bastion server and execute it:
 
 ```
 ssh root@<bastion-ip>
 
-./statuspage-demo/cleanup.sh
+./statuspage-demo/statuspage-destroy.sh
 ```
 
 All that will be left at this point is the bastion server itself. To destroy the bastion server,
