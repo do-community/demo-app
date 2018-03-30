@@ -10,9 +10,19 @@
 
   tasks:
 
+  - name: Copy application
+    copy:
+      src: /root/statuspage-demo/app/
+      dest: /opt/statuspage-demo
+
+  - name: Make application binary executable
+    file:
+      path: /opt/statuspage-demo/app
+      mode: 0744
+
   - name: Create systemd service configuration
     template:
-      src: templates/statuspage-demo.service.j2
+      src: /root/statuspage-demo/ansible/templates/statuspage-demo.service.j2
       dest: /lib/systemd/system/statuspage-demo.service
 
   - name: Start statuspage-demo systemd service
