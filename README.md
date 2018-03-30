@@ -34,7 +34,7 @@ We're going to do this by creating a single Droplet with the DigitalOcean contro
 
 Before we create this Droplet, we need to create a DigitalOcean "personal access token" and "spaces access keys". This can be done from the "API" tab of the DigitalOcean Control Panel.
 
-![DigitalOcean Control Panel API Tab](./README.ss-api.png)
+![DigitalOcean Control Panel API Tab](./images/README.ss-api.png)
 
 Go ahead and create one of each. Take note of the token/keys - we'll need these later.
 
@@ -42,7 +42,7 @@ _**Note:** the personal access token will be a single token. The spaces access k
 
 Now we're ready to create our bastion Droplet. Go to the "Droplets" tab on the DigitalOcean control panel.
 
-![DigitalOcean Control Panel Droplets Tab](./README.ss-droplets.png)
+![DigitalOcean Control Panel Droplets Tab](./images/README.ss-droplets.png)
 
 * Click "Create Droplet".
 
@@ -101,13 +101,13 @@ The DigitalOcean resources we've just created include:
 
 First thing to check out is the dashboard tab:
 
-![DigitalOcean Control Panel Dashboard Tab](./README.ss-dashboard.png)
+![DigitalOcean Control Panel Dashboard Tab](./images/README.ss-dashboard.png)
 
 Here we get a high level view of the DigitalOcean resources we've created.
 
 If we click one of our Droplets, it will take us to its Graphs view for the Droplet you selected:
 
-![DigitalOcean Control Panel Droplet](./README.ss-droplet.png)
+![DigitalOcean Control Panel Droplet](./images/README.ss-droplet.png)
 
 Because we've enabled monitoring on our Droplets, we get some really great graphs right on the control panel. You'll probably the system metrics are a bit more volatile than you'd expect for infrastructure running an application that's no one's actually using. This is because we've added a job to the bastion server's crontab to send requests to your load balancer. Check the `/etc/crontab` file on your bastion server so see exactly what it's doing.
 
