@@ -9,6 +9,7 @@
     wait_for_connection:
 
   tasks:
+
   - name: Install packages
     apt:
       name: "{{ item }}"
