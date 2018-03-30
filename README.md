@@ -88,6 +88,31 @@ tail -f /var/log/cloud-init-output.log
 
 After a few minutes, our launch process will have completed! When it does, open your load balancer IP address in a browser and check out your status page!
 
+## The DigitalOcean Control Panel
+
+Now that we have our status page running, we can explore the Control Panel!
+
+The DigitalOcean resources we've just created include:
+
+* [Droplets](https://cloud.digitalocean.com/droplets)
+* [Spaces](https://cloud.digitalocean.com/spaces)
+* [Load Balancers](https://cloud.digitalocean.com/networking/load_balancers)
+* [Firewalls](https://cloud.digitalocean.com/networking/firewalls)
+
+First thing to check out is the dashboard tab:
+
+![DigitalOcean Control Panel Dashboard Tab](./README.ss-dashboard.png)
+
+Here we get a high level view of the DigitalOcean resources we've created.
+
+If we click one of our Droplets, it will take us to its Graphs view for the Droplet you selected:
+
+![DigitalOcean Control Panel Droplet](./README.ss-droplet.png)
+
+Because we've enabled monitoring on our Droplets, we get some pretty great graphs right on our control panel. In addition to graphs, having monitoring enabled allows users to create alerting policies so you're notified when your system metrics cross thresholds of your choosing.
+
+Be sure to also explore your newly created [space](https://cloud.digitalocean.com/spaces), [load balancer](https://cloud.digitalocean.com/networking/load_balancers), and [firewalls](https://cloud.digitalocean.com/networking/firewalls).
+
 ## Destroy the Application
 
 While it's really cool that you have a running application on your DigitalOcean account, you should probably tear it down. Though the resources it uses are relatively inexpensive, it _does_ actually cost money!
