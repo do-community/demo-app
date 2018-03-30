@@ -109,7 +109,7 @@ If we click one of our Droplets, it will take us to its Graphs view for the Drop
 
 ![DigitalOcean Control Panel Droplet](./README.ss-droplet.png)
 
-Because we've enabled monitoring on our Droplets, we get some pretty great graphs right on our control panel. In addition to graphs, having monitoring enabled allows users to create alerting policies so you're notified when your system metrics cross thresholds of your choosing.
+Because we've enabled monitoring on our Droplets, we get some really great graphs right on our control panel. In addition to graphs, having monitoring enabled allows us to create alerting policies to receive notifications when system metrics cross thresholds of our choosing. Alerting policies can be set up on the [Monitoring tab](https://cloud.digitalocean.com/monitors) of the Control Panel.
 
 Be sure to also explore your newly created [space](https://cloud.digitalocean.com/spaces), [load balancer](https://cloud.digitalocean.com/networking/load_balancers), and [firewalls](https://cloud.digitalocean.com/networking/firewalls).
 
@@ -119,7 +119,7 @@ While it's really cool that you have a running application on your DigitalOcean 
 
 When we launched the application, we copied a cleanup script onto the bastion server - [statuspage-destroy.sh](./statuspage-destroy.sh). If you look at the script, you'll see that the destruction is coordinated with Terraform. Terraform knows of all resources it originally created through its state file - which we've stored in DigitalOcean Spaces. It will not affect any other resourses associated with your account.
 
-When you're ready to destroy your status page application, you must connect to your bastion server and execute it:
+When you're ready to destroy your status page application, you must connect to your bastion server and execute the script:
 
 ```
 ssh root@<bastion-ip>
