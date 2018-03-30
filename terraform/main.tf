@@ -164,12 +164,12 @@ resource "digitalocean_firewall" "db" {
 }
 
 data "template_file" "ansible_hosts" {
-  template = "[web]\n$${web_ips}\n\n[db]\n$${db_ips}\n"
+  template = "[web]\n$${web}\n\n[db]\n$${db}\n"
   depends_on = ["digitalocean_droplet.web", "digitalocean_droplet.db"]
 
   vars {
-    web_ips = "${join("\n", digitalocean_droplet.web.*.ipv4_address_private)}"
-    db_ips = "${digitalocean_droplet.db.ipv4_address_private}"
+    web = "${join("\n", digitalocean_droplet.web.*.ipv4_address_private)}"
+    db = "db-0 ansible_host=${digitalocean_droplet.db.ipv4_address_private}"
   }
 }
 
