@@ -22,8 +22,8 @@ type component struct {
 }
 
 type incident struct {
-	Date        time.Time
-	Description string
+	Date               time.Time
+	Title, Description string
 }
 
 type statusPageHandler struct {
@@ -76,7 +76,7 @@ func (h *statusPageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	incidents, err := h.getIncidents()
 	if err != nil {
 		incidents = []incident{
-			{Date: time.Now(), Description: err.Error()},
+			{Date: time.Now(), Title: "Error", Description: err.Error()},
 		}
 	}
 
@@ -131,7 +131,7 @@ func (h *statusPageHandler) getIncidents() ([]incident, error) {
 
 	var incidents []incident
 
-	rows, err := h.db.Query("SELECT datetime, description FROM incidents ORDER BY datetime DESC")
+	rows, err := h.db.Query("SELECT datetime, title, description FROM incidents ORDER BY datetime DESC")
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -140,14 +140,14 @@ func (h *statusPageHandler) getIncidents() ([]incident, error) {
 
 	for rows.Next() {
 		var date mysql.NullTime
-		var description string
-		if err := rows.Scan(&date, &description); err != nil {
-			log.Println("Scan:", err)
+		var title, description string
+		if err := rows.Scan(&date, &title, &description); err != nil {
+			log.Println(err)
 			continue
 		}
 
 		if date.Valid {
-			incidents = append(incidents, incident{Date: date.Time, Description: description})
+			incidents = append(incidents, incident{Date: date.Time, Title: title, Description: description})
 		}
 	}
 

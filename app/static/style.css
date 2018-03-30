@@ -105,6 +105,9 @@ h6 {
 }
 
 .incident p.highlight {
-  font-weight: 400;
   color: #eaab3d;
+}
+
+.incident p.highlight.title {
+  font-weight: 400;
 }

@@ -22,8 +22,9 @@
         {{ range .Incidents }}
         <div class="incident">
           <h6>{{ "Jan _2, 2006" | .Date.Format }}</h6>
-          {{- if .Description }}
-          <p class="highlight">{{ "15:04:05" | .Date.Format }} - {{ .Description }}</p>
+          {{- if or .Title .Description }}
+          <p class="highlight title">{{ "15:04:05" | .Date.Format }} - {{ .Title }}</p>
+          <p class="highlight">{{ .Description }}</p>
           {{ else }}
           <p>No incidents reported.</p>
           {{ end }}
