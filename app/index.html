@@ -19,14 +19,20 @@
       </section>
       <section>
         <h4>Incidents</h4>
-        {{ range .Incidents }}
-        <div class="incident">
+        {{ range .Days }}
+        <div class="day">
           <h6>{{ "Jan _2, 2006" | .Date.Format }}</h6>
-          {{- if or .Title .Description }}
-          <p class="highlight title">{{ "15:04:05" | .Date.Format }} - {{ .Title }}</p>
-          <p class="highlight">{{ .Description }}</p>
+          {{- if .Incidents }}
+          {{ range .Incidents }}
+          <div class="incident">
+            <p class="highlight title">{{ "15:04:05" | .Date.Format }} - {{ .Title }}</p>
+            <p class="highlight">{{ .Description }}</p>
+          </div>
+          {{ end }}
           {{ else }}
-          <p>No incidents reported.</p>
+          <div class="incident">
+            <p>No incidents reported.</p>
+          </div>
           {{ end }}
         </div>
         {{ end }}

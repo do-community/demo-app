@@ -14,11 +14,16 @@ import (
 
 type statusData struct {
 	Components []component
-	Incidents  []incident
+	Days       []day
 }
 
 type component struct {
 	Name, Status string
+}
+
+type day struct {
+	Date      time.Time
+	Incidents []incident
 }
 
 type incident struct {
@@ -80,9 +85,21 @@ func (h *statusPageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	var days []day
+	start := time.Now()
+	for d := start; d.After(start.AddDate(0, 0, -14)); d = d.AddDate(0, 0, -1) {
+		nd := day{Date: d}
+		for _, inc := range incidents {
+			if inc.Date.YearDay() == d.YearDay() {
+				nd.Incidents = append(nd.Incidents, inc)
+			}
+		}
+		days = append(days, nd)
+	}
+
 	data := statusData{
 		Components: components,
-		Incidents:  incidents,
+		Days:       days,
 	}
 
 	if err := h.t.Execute(w, data); err != nil {
@@ -131,7 +148,7 @@ func (h *statusPageHandler) getIncidents() ([]incident, error) {
 
 	var incidents []incident
 
-	rows, err := h.db.Query("SELECT datetime, title, description FROM incidents ORDER BY datetime DESC")
+	rows, err := h.db.Query("SELECT datetime, title, description FROM incidents WHERE datetime > DATE_SUB(CURDATE(), INTERVAL 14 DAY) ORDER BY datetime DESC")
 	if err != nil {
 		log.Println(err)
 		return nil, err
