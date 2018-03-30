@@ -38,17 +38,7 @@ resource "digitalocean_droplet" "db" {
 
   volume_ids = ["${digitalocean_volume.db.id}"]
 
-  provisioner "remote-exec" {
-    inline = [
-      "pgrep apt && sleep 30",
-      "apt -y update",
-      "apt-get install -y python-minimal",
-    ]
-    connection {
-      host = "${self.ipv4_address_private}"
-      private_key = "${file(var.ssh_key_path)}"
-    }
-  }
+  user_data = "${file("user_data.sh")}"
 }
 
 #Create Web-Server droplets
@@ -64,17 +54,7 @@ resource "digitalocean_droplet" "web" {
   ssh_keys = ["${digitalocean_ssh_key.default.id}"]
   private_networking = true
 
-  provisioner "remote-exec" {
-    inline = [
-      "pgrep apt && sleep 30",
-      "apt -y update",
-      "apt-get install -y python-minimal",
-    ]
-    connection {
-      host = "${self.ipv4_address_private}"
-      private_key = "${file(var.ssh_key_path)}"
-    }
-  }
+  user_data = "${file("user_data.sh")}"
 }
 
 #Create Loadbalancer
@@ -184,21 +164,12 @@ resource "digitalocean_firewall" "db" {
 }
 
 data "template_file" "ansible_hosts" {
-  template = "[webservers]\n$${web_ips}\n\n[db]\n$${db_ips}\n"
+  template = "[web]\n$${web}\n\n[db]\n$${db}\n"
   depends_on = ["digitalocean_droplet.web", "digitalocean_droplet.db"]
 
   vars {
-    web_ips = "${join("\n", digitalocean_droplet.web.*.ipv4_address_private)}"
-    db_ips = "${digitalocean_droplet.db.ipv4_address_private}"
-  }
-}
-
-data "template_file" "app_script" {
-  template = "${file("statuspage-demo.service.tpl")}"
-  depends_on = ["digitalocean_droplet.db"]
-
-  vars {
-    db_ip = "${digitalocean_droplet.db.ipv4_address_private}"
+    web = "${join("\n", digitalocean_droplet.web.*.ipv4_address_private)}"
+    db = "db-0 ansible_host=${digitalocean_droplet.db.ipv4_address_private}"
   }
 }
 
@@ -222,17 +193,6 @@ resource null_resource "load_gen" {
   }
 }
 
-resource null_resource "app_script" {
-  depends_on = ["digitalocean_droplet.db"]
-  triggers {
-    template_rendered = "${data.template_file.app_script.rendered}"
-  }
-
-  provisioner "local-exec" {
-    command = "cd ../ansible/files && echo '${data.template_file.app_script.rendered}' > statuspage-demo.service.j2"
-  }
-}
-
 resource null_resource "ansible_prep" {
   depends_on = ["digitalocean_droplet.web", "digitalocean_droplet.db"]
   triggers {
@@ -245,7 +205,7 @@ resource null_resource "ansible_prep" {
 }
 
 resource null_resource "ansible_web" {
-  depends_on = ["null_resource.ansible_prep", "digitalocean_firewall.web", "null_resource.app_script"]
+  depends_on = ["null_resource.ansible_prep", "digitalocean_firewall.web"]
 
   provisioner "local-exec" {
     command = "cd ../ansible && ansible-playbook playbooks/web.yml"

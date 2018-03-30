@@ -1,61 +1,31 @@
 ---
 
-- hosts: webservers
+- hosts: web
   gather_facts: false
   become: yes
 
   pre_tasks:
   - name: Wait 600 seconds for target connection to become reachable/usable
     wait_for_connection:
-  - name: Install python for Ansible
-    raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
-    changed_when: False
 
   tasks:
-  - name: GoLang - Check already installed
-    stat:
-      path: "/usr/local/go/bin/go"
-    register: golang_binary
 
-  - name: GoLang - Check download cached
-    stat:
-      path: "/tmp/go1.8.1.linux-amd64.tar.gz"
-    register: golang_archive
-    when: not golang_binary.stat.exists
+  - name: Copy application
+    copy:
+      src: /root/statuspage-demo/app/
+      dest: /opt/statuspage-demo
 
-  - name: GoLang - Download precompiled binaries
-    get_url:
-      url: "https://storage.googleapis.com/golang/go1.8.1.linux-amd64.tar.gz"
-      dest: "/tmp/go1.8.1.linux-amd64.tar.gz"
-    when: not golang_binary.stat.exists and not golang_archive.stat.exists
-
-  - name: GoLang - Install binaries
-    unarchive:
-      src: "/tmp/go1.8.1.linux-amd64.tar.gz"
-      dest: "/usr/local"
-      copy: "no"
-    when: not golang_binary.stat.exists
-
-  - name: GoLang - Create system-wide symlinks
+  - name: Make application binary executable
     file:
-      src: "/usr/local/go/bin/go"
-      dest: "/usr/local/bin/go"
-      state: "link"
+      path: /opt/statuspage-demo/app
+      mode: 0744
 
-  - name: GoLang - Install go mysql go-sql-driver
-    command: "go get github.com/go-sql-driver/mysql"
-
-  - name: Deploy - Build statuspage-demo app
-    command: "go build"
-    args:
-      chdir: /var/www/app
-
-  - name: Deploy - Install app service
-    template: 
-      src: files/statuspage-demo.service.j2
+  - name: Create systemd service configuration
+    template:
+      src: /root/statuspage-demo/ansible/templates/statuspage-demo.service.j2
       dest: /lib/systemd/system/statuspage-demo.service
 
-  - name: Deploy - Start statuspage-demo app
+  - name: Start statuspage-demo systemd service
     systemd:
       name: statuspage-demo
       state: started
