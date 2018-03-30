@@ -205,7 +205,7 @@ resource null_resource "ansible_prep" {
 }
 
 resource null_resource "ansible_web" {
-  depends_on = ["null_resource.ansible_prep", "digitalocean_firewall.web", "null_resource.app_script"]
+  depends_on = ["null_resource.ansible_prep", "digitalocean_firewall.web"]
 
   provisioner "local-exec" {
     command = "cd ../ansible && ansible-playbook playbooks/web.yml"
