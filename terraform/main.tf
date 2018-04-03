@@ -174,7 +174,7 @@ data "template_file" "ansible_hosts" {
 }
 
 data "template_file" "load_gen" {
-  template = "* * * * * root ab -qSd -n $(shuf -i 100-1000 -n 1) -c $(shuf -i 1-10 -n 1) http://$${lb_ip}/ 2>&1 > /dev/null"
+  template = "* * * * * root ab -qSd -t 60 -n $(shuf -i 50000-150000 -n 1) -c $(shuf -i 50-100 -n 1) http://$${lb_ip}/ 2>&1 > /dev/null"
   depends_on = ["digitalocean_loadbalancer.lb", "null_resource.ansible_web"]
 
   vars {
@@ -189,7 +189,7 @@ resource null_resource "load_gen" {
   }
 
   provisioner "local-exec" {
-    command = "echo '${data.template_file.load_gen.rendered}' >> /etc/crontab"
+    command = "echo '${data.template_file.load_gen.rendered}' > /etc/cron.d/statuspage-load-generator"
   }
 }
 
