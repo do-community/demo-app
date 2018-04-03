@@ -99,6 +99,7 @@ resource "digitalocean_firewall" "web" {
     },
     {
       protocol         = "icmp"
+      port_range       = "0"
       source_addresses = ["${digitalocean_droplet.bastion.*.ipv4_address_private}"]
     },
   ]
@@ -140,6 +141,7 @@ resource "digitalocean_firewall" "db" {
     },
     {
       protocol         = "icmp"
+      port_range       = "0"
       source_addresses = ["${digitalocean_droplet.bastion.*.ipv4_address_private}"]
     },
   ]
