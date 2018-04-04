@@ -21,7 +21,7 @@ resource "digitalocean_droplet" "bastion" {
 #Create volume for database droplet
 resource "digitalocean_volume" "db" {
   region = "${var.region}"
-  name   = "statuspage-db"
+  name   = "statuspage-db-${digitalocean_droplet.bastion.id}"
   size   = 100
 }
 
@@ -59,7 +59,7 @@ resource "digitalocean_droplet" "web" {
 
 #Create Loadbalancer
 resource "digitalocean_loadbalancer" "lb" {
-  name   = "statuspage-loadbalancer"
+  name   = "statuspage-loadbalancer-${digitalocean_droplet.bastion.id}"
   region = "${var.region}"
 
   forwarding_rule {
@@ -82,7 +82,7 @@ resource "digitalocean_loadbalancer" "lb" {
 
 #Create firewall_rules for web and db droplets
 resource "digitalocean_firewall" "web" {
-  name = "statuspage-loadbalancer-to-web-firewall"
+  name = "statuspage-loadbalancer-to-web-firewall-${digitalocean_droplet.bastion.id}"
 
   droplet_ids = ["${digitalocean_droplet.web.*.id}"]
 
@@ -123,7 +123,7 @@ resource "digitalocean_firewall" "web" {
 }
 
 resource "digitalocean_firewall" "db" {
-  name = "statuspage-web-to-database-firewall"
+  name = "statuspage-web-to-database-firewall-${digitalocean_droplet.bastion.id}"
 
   droplet_ids = ["${digitalocean_droplet.db.id}"]
 
