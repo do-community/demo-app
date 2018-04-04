@@ -95,11 +95,11 @@ resource "digitalocean_firewall" "web" {
     {
       protocol         = "tcp"
       port_range       = "22"
-      source_addresses = ["${digitalocean_droplet.bastion.*.ipv4_address_private}"]
+      source_addresses = ["${digitalocean_droplet.bastion.ipv4_address_private}"]
     },
     {
       protocol         = "icmp"
-      source_addresses = ["${digitalocean_droplet.bastion.*.ipv4_address_private}"]
+      source_addresses = ["${digitalocean_droplet.bastion.ipv4_address_private}"]
     },
   ]
 
@@ -136,11 +136,11 @@ resource "digitalocean_firewall" "db" {
     {
       protocol         = "tcp"
       port_range       = "22"
-      source_addresses = ["${digitalocean_droplet.bastion.*.ipv4_address_private}"]
+      source_addresses = ["${digitalocean_droplet.bastion.ipv4_address_private}"]
     },
     {
       protocol         = "icmp"
-      source_addresses = ["${digitalocean_droplet.bastion.*.ipv4_address_private}"]
+      source_addresses = ["${digitalocean_droplet.bastion.ipv4_address_private}"]
     },
   ]
 
