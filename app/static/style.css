@@ -96,15 +96,18 @@ h6 {
   color: #eaab3d;
 }
 
-.incident {
+.day {
   margin-bottom: 4rem;
 }
 
-.incident h6 {
+.day h6 {
   border-bottom: 0.1rem solid #e1e1e1;
 }
 
 .incident p.highlight {
-  font-weight: 400;
   color: #eaab3d;
+}
+
+.incident p.highlight.title {
+  font-weight: 400;
 }

@@ -14,16 +14,21 @@ import (
 
 type statusData struct {
 	Components []component
-	Incidents  []incident
+	Days       []day
 }
 
 type component struct {
 	Name, Status string
 }
 
+type day struct {
+	Date      time.Time
+	Incidents []incident
+}
+
 type incident struct {
-	Date        time.Time
-	Description string
+	Date               time.Time
+	Title, Description string
 }
 
 type statusPageHandler struct {
@@ -76,13 +81,25 @@ func (h *statusPageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	incidents, err := h.getIncidents()
 	if err != nil {
 		incidents = []incident{
-			{Date: time.Now(), Description: err.Error()},
+			{Date: time.Now(), Title: "Error", Description: err.Error()},
 		}
+	}
+
+	var days []day
+	start := time.Now()
+	for d := start; d.After(start.AddDate(0, 0, -14)); d = d.AddDate(0, 0, -1) {
+		nd := day{Date: d}
+		for _, inc := range incidents {
+			if inc.Date.YearDay() == d.YearDay() {
+				nd.Incidents = append(nd.Incidents, inc)
+			}
+		}
+		days = append(days, nd)
 	}
 
 	data := statusData{
 		Components: components,
-		Incidents:  incidents,
+		Days:       days,
 	}
 
 	if err := h.t.Execute(w, data); err != nil {
@@ -131,7 +148,7 @@ func (h *statusPageHandler) getIncidents() ([]incident, error) {
 
 	var incidents []incident
 
-	rows, err := h.db.Query("SELECT datetime, description FROM incidents ORDER BY datetime DESC")
+	rows, err := h.db.Query("SELECT datetime, title, description FROM incidents WHERE datetime > DATE_SUB(CURDATE(), INTERVAL 14 DAY) ORDER BY datetime DESC")
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -140,14 +157,14 @@ func (h *statusPageHandler) getIncidents() ([]incident, error) {
 
 	for rows.Next() {
 		var date mysql.NullTime
-		var description string
-		if err := rows.Scan(&date, &description); err != nil {
-			log.Println("Scan:", err)
+		var title, description string
+		if err := rows.Scan(&date, &title, &description); err != nil {
+			log.Println(err)
 			continue
 		}
 
 		if date.Valid {
-			incidents = append(incidents, incident{Date: date.Time, Description: description})
+			incidents = append(incidents, incident{Date: date.Time, Title: title, Description: description})
 		}
 	}
 
