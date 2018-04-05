@@ -8,7 +8,7 @@ apt update
 apt install -y ansible
 
 # Download the demo app
-wget -P /root https://github.com/do-community/demo-app/archive/v0.0.1.tar.gz
+wget -P /root https://github.com/do-community/demo-app/archive/v$(cat /root/statuspage-demo/VERSION).tar.gz
 mkdir /root/statuspage-demo
 tar -xf /root/statuspage-demo.tar.gz -C /root/statuspage-demo
 rm /root/statuspage-demo.tar.gz
