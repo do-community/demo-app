@@ -8,10 +8,10 @@ apt update
 apt install -y ansible
 
 # Download the demo app
-wget -P /root https://github.com/do-community/demo-app/archive/v$(cat /root/statuspage-demo/VERSION).tar.gz
-mkdir /root/statuspage-demo
-tar -xf /root/statuspage-demo.tar.gz -C /root/statuspage-demo
-rm /root/statuspage-demo.tar.gz
+wget -P /root https://github.com/do-community/demo-app/archive/v$version.tar.gz
+tar -xf /root/v$version.tar.gz -C /root
+rm /root/v$version.tar.gz
+ln -s /root/demo-app-$version /root/statuspage-demo
 
 # Run the localhost playbook
 cd /root/statuspage-demo/ansible
