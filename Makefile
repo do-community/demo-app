@@ -13,7 +13,7 @@ ifndef GITHUB_TOKEN
 endif
 
 check-readme:
-ifeq ($(shell grep -q `cat VERSION`/statuspage-launch.sh README.md; echo $$?),1)
+ifeq ($(shell grep -q version=\"`cat VERSION`\" README.md; echo $$?),1)
 	$(error REAMDME.md does not reference the correct version of statuspage-launch.sh.)
 endif
 
