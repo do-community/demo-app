@@ -144,3 +144,95 @@ All that will be left at this point is the bastion server itself. To destroy the
 * Click "Confirm".
 
 That's it! Our beloved status page is completely destroyed and we're back to where we started. But at least you know what you're doing now! You're ready to deploy your own application on DigitalOcean :sunglasses:
+
+## Troubleshooting
+
+The first thing to do is check the cloud-init log on your bastion host. You can run the following to output the last 100 lines:
+
+```
+ssh root@<bastion-ip>
+
+tail -100 /var/log/cloud-init-output.log
+```
+
+### API Keys and Tokens
+
+It's common that personal access tokens or spaces access keys are set incorrectly.
+
+#### Spaces Access Keys
+
+If your spaces access keys are incorrectly, you'll see sommething like the following towards the end of your `cloud-init-output.log`:
+
+```
+...
+
+botocore.exceptions.ClientError: An error occurred (InvalidAccessKeyId) when calling the ListBuckets operation: Unknown
+
+...
+
+Error loading state: InvalidAccessKeyId:
+        status code: 403, request id: tx0000000000000000436da-005ac64745-176e91-nyc3a, host id:
+
+...
+```
+
+This indicates that your spaces access key ID was entered incorrectly.
+
+The following would indicate that your spaces access key secret was entered incorrectly:
+
+```
+...
+
+botocore.exceptions.ClientError: An error occurred (SignatureDoesNotMatch) when calling the ListBuckets operation: Unknown
+
+...
+
+Error loading state: SignatureDoesNotMatch:
+        status code: 403, request id: tx000000000000000008935-005ac64db9-171d53-nyc3a, host id:
+
+...
+```
+
+If either occur, start over by deleting your bastion droplet and create a new one with valid key values in its "User Data" script.
+
+#### Personal Access Tokens
+
+If your personal access token was entered incorrectly, you'll see output like the following:
+
+```
+...
+
+Error: digitalocean_droplet.bastion (import id: 88489983): 1 error(s) occurred:
+
+* import digitalocean_droplet.bastion result: 88489983: digitalocean_droplet.bastion: Error retrieving droplet: GET https://api.digitalocean.com/v2/droplets/88489983: 401 Unable to authenticate you.
+
+...
+```
+
+Again, the easiest approach would be to start over by deleting your bastion droplet and create a new one with a valid token in its "User Data" script.
+
+A less easy approach, if you feel like getting your hands dirty, is to update your token in `/root/statuspage-demo/terraform/token.auto.tfvars`. And then attempt to re-apply your Terraform configuration with `cd /root/statuspage-demo/terraform/ && terraform apply -auto-approve`.
+
+### Terraform Apply Failure
+
+Another common issue is that our `terraform apply` command failed for some reason or another. If this is the case, you'll see the following accompanied by a list of errors:
+
+```
+...
+
+Error: Error applying plan:
+
+...
+```
+
+In cloud computing and software in general, there's an  _endless_ list of problems that can arise. Because we're depending on so many different services from DNS to DigitalOcean APIs, there's a good chance that one of them didn't behave in the way we needed it to. Terraform does a good job with error messages so you should be able to tell what failed in your cloud-init output.
+
+Whatever it is that failed, there's a good chance it will succeed if you re-apply your Terraform configuration. You can do this with the following command:
+
+```
+cd /root/statuspage-demo/terraform/ && terraform apply -auto-approve
+```
+
+### ANYTHING ELSE!!!
+
+First off, sorry for the frustration! Debugging infrastructure code can be a pain. But to look at the bright side, debugging/troubleshooting in general can also be a great learning experience! Our best advice at this point is to recreate your bastion droplet. At least it's a pretty easy thing to do - just a few clicks on the ol' DigitalOcean Control Panel!
