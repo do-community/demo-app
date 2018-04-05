@@ -86,7 +86,9 @@ ssh root@<bastion-ip>
 tail -f /var/log/cloud-init-output.log
 ```
 
-After a few minutes, our launch process will have completed! When it does, open your load balancer IP address in a browser and check out your status page!
+After a few minutes, the launch process will have completed.
+
+When it does, open your load balancer IP address in a browser and to see your status page!
 
 ## The DigitalOcean Control Panel
 
