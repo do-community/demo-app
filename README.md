@@ -64,8 +64,9 @@ Now we're ready to create our bastion Droplet. Go to the "Droplets" tab on the D
 export do_token="PUT YOUR PERSONAL ACCESS TOKEN HERE"
 export do_spaces_id="PUT YOUR SPACES ACCESS KEY HERE"
 export do_spaces_key="PUT YOUR SPACES ACCESS SECRET HERE"
+export version="0.0.1"
 
-curl https://github.com/do-community/demo-app/blob/v0.0.1/statuspage-launch.sh | bash
+curl https://github.com/do-community/demo-app/blob/v$version/statuspage-launch.sh | bash
 ```
 
 _**Note:** we do not recommend piping scripts from the internet to `bash` as a common practice. This is to keep the copy/paste content at a minimum so we can focus on getting our application up._
