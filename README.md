@@ -1,62 +1,66 @@
 # DigitalOcean Demo App
 
-It can be difficult to get acquainted with a new cloud services platform. We find that the easiest way to get up and running is to deploy an application!
+It can sometimes be difficult to get acquainted with a new cloud services platform. We find that the easiest way to get a sense of how a platform works is to dive in and deploy an application yourself.
 
-This repository contains a demo application and automation to launch it on your own DigitalOcean account. This will allow you to get a feel for what it's like to run code on DigitalOcean.
+This repository contains a demo application with automation that you can launch from your DigitalOcean account. This will allow you to see what it's like to run code on DigitalOcean.
 
 ## What's Involved?
 
 ### The Application
 
-The actual application we'll be deploying is a "status page". A status page is a web page that shows status information for another product or service. For example, if you want to check on the status of DigitalOcean, you could go to our status page: https://status.digitalocean.com/.
-
-The status page we're deploying isn't quite as full-featured, but perhaps it could be someday :P
+The application we'll be deploying is a _status page_, a web page that shows status information for a product or service. For example, if you’d like to know whether servers in a specific DigitalOcean datacenter were under maintenance, you would go to [DigitalOcean’s status page](https://status.digitalocean.com/). The status page we will deploy isn't as full-featured as DigitalOcean’s, although it could serve as the groundwork for a more fleshed-out status page.
 
 The application code can be found in the [app](./app/) directory. It's written in [Go](https://golang.org/) and uses [MySQL](https://www.mysql.com/) as its database.
 
 ### Infrastructure as Code (IaC)
 
-This is the code that defines our DigitalOcean cloud resources! In this project, we've defined our infrastructure using [Terraform](https://www.terraform.io/). Terraform has a great [provider for DigitalOcean](https://www.terraform.io/docs/providers/do/index.html). The Terraform configuration can be found in the [terraform](./terraform/) directory. In [main.tf](./terraform/main.tf), you'll find all resources involved in running our status page application.
+One of the goals of this demo application is that it should be fast and easy to deploy all the resources needed to get it up and running. That’s why, rather than spinning up each Droplet separately through the Control Panel, you will create the app’s resources through the model of Infrastructure as Code.
+
+[Infrastructure as Code](https://en.wikipedia.org/wiki/Infrastructure_as_Code) describes the process of setting up cloud infrastructure with files that contain computer-readable code. In the context of this demo app, IaC is the code that defines our DigitalOcean cloud resources. Configuring infrastructure this way is a convenient alternative to working with physical servers or through a user interface.
+
+In this project, we've defined our infrastructure using [Terraform](https://www.terraform.io/), which has a great [provider for DigitalOcean](https://www.terraform.io/docs/providers/do/index.html). The Terraform configuration can be found in the [terraform](./terraform/) directory. In [main.tf](./terraform/main.tf), you'll find all resources involved in running our status page application.
 
 ### Automated Provisioning
 
-Provisioning is the process of bringing infrastructure components to a desired state - which in our case involves installing software and running services on DigitalOcean [Droplets](https://www.digitalocean.com/products/droplets/). We need to provision a database server with MySQL and web servers with our status page application. We're using [Ansible](https://www.ansible.com/) for automating the necessary provisioning. The database server and web servers require different instructions to be provisioned appropriately. Ansible organizes sets of instructions as "playbooks". Our Ansible code can be found in the [ansible](./ansible/) directory.
+To further streamline the process of getting the application up and running, the demo app utilizes automated provisioning to deploy its various components. This involves automatically installing software and running services on the demo app’s infrastructure, the benefit being that you aren’t required to configure each component separately and test whether they function together correctly.
+
+The demo app requires that we provision a database server with MySQL, a pair of web servers that will host our status page application, and a load balancer to distribute traffic between the web servers. To do this, we're using [Ansible](https://www.ansible.com/) to automate the necessary provisioning. The database server and web servers require different instructions to be provisioned appropriately, and these instructions are organized by Ansible as “playbooks". Our Ansible code can be found in the [ansible](./ansible/) directory.
 
 ### Tying It All Together
 
-Everything is tied together by a launch script ([statuspage-launch.sh](./statuspage-launch.sh)). This runs our IaC and provisioning code in the necessary order. The next section explains how to run it!
+The demo application, IaC, and automated provisioning are tied together by a launch script ([statuspage-launch.sh](./statuspage-launch.sh)). This script runs our IaC and provisioning code in the necessary order; the next section explains how to run it.
 
-## Run the Application!
+## Running the Application
 
-Now that you have an understanding of the technology that will come into play, let's run the application!
+Now that you have an understanding of the technology that will come into play, let's run the application.
 
-We're going to do this by creating a single Droplet with the DigitalOcean control panel. This Droplet is going to be our [bastion host](https://en.wikipedia.org/wiki/Bastion_host). This type of host is traditionally referenced in infrastructure designs as a means for implementing security measures. A similar term for such a host is "[jump server](https://en.wikipedia.org/wiki/Jump_server)". In our case, we're using it as an SSH gateway and also the coordinating system for building out the rest of our infrastructure.
-
-Before we create this Droplet, we need to create a DigitalOcean "personal access token" and "spaces access keys". This can be done from the "API" tab of the DigitalOcean Control Panel.
+We're going to do this by creating a single Droplet using the DigitalOcean control panel. Before we create this Droplet, we need to create a DigitalOcean personal access token and a set of [Spaces](https://www.digitalocean.com/products/spaces/) access keys. This can be done from the "API" tab of the DigitalOcean Control Panel.
 
 ![DigitalOcean Control Panel API Tab](./images/README.ss-api.png)
 
-Go ahead and create one of each. Take note of the token/keys - we'll need these later.
+Go ahead and create one of each. Take note of the token and keys - we'll need these later.
 
-_**Note:** the personal access token will be a single token. The spaces access key will have two parts - a key and a secret key._
+_**Note:** The personal access token will be a single token. The Spaces access key will have two parts - an access key and a secret key. You will need all three in order to launch the demo application._
 
-Now we're ready to create our bastion Droplet. Go to the "Droplets" tab on the DigitalOcean control panel.
+The Droplet we will create is going to be our [bastion host](https://en.wikipedia.org/wiki/Bastion_host). This type of host is traditionally used in infrastructure designs to implement security measures. In our case, we're using the bastion host as both an SSH gateway and the coordinating system for building out the rest of our infrastructure.
+
+Go to the **Droplets** tab on the DigitalOcean control panel.
 
 ![DigitalOcean Control Panel Droplets Tab](./images/README.ss-droplets.png)
 
-* Click "Create Droplet".
+* Click **Create** and select **Droplet**.
 
-* Under "Choose an image", ensure that "Ubuntu" is selected.
+* Under **Choose an image**, ensure that **Ubuntu 16.04** is selected.
 
-* Under "Choose a size", select the cheapest option.
+* Under **Choose a size**, select the cheapest option.
 
-* Ignore "Add block storage" - we do not need block storage for the bastion host.
+* Ignore **Add block storage** - we do not need block storage for the bastion host.
 
-* Under "Choose a datacenter region", select the "3" on "New York".
+* Under **Choose a datacenter region**, select the **3** under **New York**.
 
-* Under "Select additional options", select the checkboxes for "Private networking" and "User data".
+* Under **Select additional options**, select the checkboxes for **Private networking**, **User data**, and **Monitoring**.
 
-* When you select "User data", a text field will appear. Paste the following code into this text field and update the lines starting with `export` with your personal access token and spaces keys:
+* When you select **User data**, a text field will appear. Add the following code into this text field and update the lines starting with `export` with your personal access token and Spaces keys:
 
 ```
 #!/bin/bash
@@ -69,17 +73,17 @@ export version="0.0.1"
 curl https://raw.githubusercontent.com/do-community/demo-app/v$version/statuspage-launch.sh | bash
 ```
 
-_**Note:** we do not recommend piping scripts from the internet to `bash` as a common practice. This is to keep the copy/paste content at a minimum so we can focus on getting our application up._
+_**Note:** we do not recommend piping scripts from the internet to `bash` as a common practice. This is to keep the copy/paste content down to a minimum so we can focus on getting the application up and running._
 
-* Under "Add your SSH keys", select an existing SSH key or click the "New SSH Key" button and enter a public key. This should be a public SSH key of your own. You will need this in order to connect to the bastion host.
+* Under **Add your SSH keys**, select an existing SSH key or click the **New SSH Key** button and enter a public key. This should be a public SSH key of your own, and you will need this in order to connect to the bastion host.
 
-* Under "Finalize and create" and "Choose a hostname", give your Droplet a more appropriate name - "bastion" would be a pretty good one.
+* Under **Finalize and create** and **Choose a hostname**, give your Droplet a more descriptive name name, such as "bastion".
 
-* Click "Create".
+* Click **Create**.
 
-That's about it! Your DigitalOcean infrastructure is now being created!
+With that, your bastion Droplet will be created. The demo application launch script will start to automatically build out the remaining infrastructure resources.
 
-Once, your Droplet is up, you should be able to SSH to it and monitor the launch progress. This can be done with:
+Once your Droplet is up, you can SSH to it and monitor the launch progress. This can be done with:
 
 ```
 ssh root@<bastion-ip>
@@ -87,44 +91,40 @@ ssh root@<bastion-ip>
 tail -f /var/log/cloud-init-output.log
 ```
 
-After a few minutes, the launch process will have completed.
-
-When it does, open your load balancer IP address in a browser and to see your status page!
+After a few minutes, the launch process will complete. Once it does, you can see your status page by entering your load balancer’s IP address in the address bar of your browser. This IP address can be found in the **Networking** section of the DigitalOcean Control Panel, under **Load Balancers**.
 
 ## The DigitalOcean Control Panel
 
-Now that we have our status page running, we can explore the Control Panel!
+Now that we have our status page running, we can explore the Control Panel to get a better understanding of how all the components of this demo app work with one another.
 
 The DigitalOcean resources we've just created include:
 
-* [Droplets](https://cloud.digitalocean.com/droplets)
-* [Spaces](https://cloud.digitalocean.com/spaces)
-* [Load Balancers](https://cloud.digitalocean.com/networking/load_balancers)
-* [Firewalls](https://cloud.digitalocean.com/networking/firewalls)
+* [Droplets](https://cloud.digitalocean.com/droplets).
+* [Spaces](https://cloud.digitalocean.com/spaces).
+* [Load Balancers](https://cloud.digitalocean.com/networking/load_balancers).
+* [Firewalls](https://cloud.digitalocean.com/networking/firewalls).
 
-First thing to check out is the dashboard tab:
+You can explore these resources by checking out the dashboard tab:
 
 ![DigitalOcean Control Panel Dashboard Tab](./images/README.ss-dashboard.png)
 
-Here we get a high level view of the DigitalOcean resources we've created.
-
-If we click one of our Droplets, it will take us to its Graphs view for the Droplet you selected:
+This provides us with a high-level overview of the DigitalOcean resources we've created. If we click one of our Droplets, it will take us to its Graphs view. Here, we can see some helpful monitoring graphs right on the control panel:
 
 ![DigitalOcean Control Panel Droplet](./images/README.ss-droplet.png)
 
-Because we've enabled monitoring on our Droplets, we get some really great graphs right on the control panel. You'll probably the system metrics are a bit more volatile than you'd expect for infrastructure running an application that's no one's actually using. This is because we've added a job to the bastion server's crontab to send requests to your load balancer. Check the `/etc/crontab` file on your bastion server so see exactly what it's doing.
+These system metrics are a bit more volatile than you'd expect for infrastructure running an application that's no one's actually using; this is because we've added a job to the bastion server's crontab to send requests to your load balancer. You can check the `/etc/crontab` file on your bastion server so see exactly what it's doing.
 
-In addition to graphs, having monitoring enabled allows us to create alerting policies to receive notifications when system metrics cross thresholds of our choosing. Alerting policies can be set up on the [Monitoring tab](https://cloud.digitalocean.com/monitors) of the Control Panel.
+In addition to providing us with these graphs, having monitoring enabled lets us create alerting policies that will allow us to receive notifications when system metrics cross chosen thresholds. Alerting policies can be set up on the [Monitoring tab](https://cloud.digitalocean.com/monitors) of the Control Panel.
 
-Be sure to also explore your newly created [space](https://cloud.digitalocean.com/spaces), [load balancer](https://cloud.digitalocean.com/networking/load_balancers), and [firewalls](https://cloud.digitalocean.com/networking/firewalls)!
+Be sure to also explore your newly created [Space](https://cloud.digitalocean.com/spaces), [load balancer](https://cloud.digitalocean.com/networking/load_balancers), and [firewalls](https://cloud.digitalocean.com/networking/firewalls) as well.
 
 ## Destroy the Application
 
-While it's really cool that you have a running application on your DigitalOcean account, you should probably tear it down. Though the resources it uses are relatively inexpensive, it _does_ actually cost money!
+Although the resources used by the demo application are relatively inexpensive, they _do_ cost money. Though it is helpful with understanding how to run code on DigitalOcean, this app doesn't do anything useful on its own. Consequently, you will likely want to destroy it before the cost of running its resources becomes excessive.
 
-When we launched the application, we copied a cleanup script onto the bastion server - [statuspage-destroy.sh](./statuspage-destroy.sh). If you look at the script, you'll see that the destruction is coordinated with Terraform. Terraform knows of all resources it originally created through its state file - which we've stored in DigitalOcean Spaces. It will not affect any other resourses associated with your account.
+When we launched the application, we copied a cleanup script onto the bastion server - [statuspage-destroy.sh](./statuspage-destroy.sh). If you look at the script, you'll see that the destruction is coordinated with Terraform. Terraform knows of all the resources it originally created through its state file, which we've stored on DigitalOcean Spaces. Running this cleanup script will not affect any other resources associated with your account.
 
-When you're ready to destroy your status page application, you must connect to your bastion server and execute the script:
+When you're ready to destroy your status page application, you must connect to your bastion server to execute the script:
 
 ```
 ssh root@<bastion-ip>
@@ -132,23 +132,24 @@ ssh root@<bastion-ip>
 ./statuspage-demo/statuspage-destroy.sh
 ```
 
-All that will be left at this point is the bastion server itself. To destroy the bastion server,
+After a few minutes, this command will produce output notifying you that the destroy process is complete. All that will be left at this point is the bastion server itself. To destroy the bastion server:
 
-* Navigate to the "Droplets" tab on the DigitalOcean control panel.
+* Navigate to the **Droplets** tab on the DigitalOcean control panel.
 
-* Click "More" on the right side of the Droplet to expose its dropdown menu.
+* Click **More** on the right side of the Droplet to expose its dropdown menu.
 
-* Click "Destroy" at the bottom of the menu.
+* Click **Destroy** at the bottom of the menu.
 
-* Under "Destroy droplet", click the "Destroy" button.
+* Under **Destroy Droplet**, click the **Destroy** button.
 
-* Click "Confirm".
+* Click **Confirm**.
 
-That's it! Our beloved status page is completely destroyed and we're back to where we started. But at least you know what you're doing now! You're ready to deploy your own application on DigitalOcean :sunglasses:
+With this, the status page is completely destroyed and we’re back to where we started. Now you are ready to deploy your own application on DigitalOcean.
+
 
 ## Troubleshooting
 
-The first thing to do is check the cloud-init log on your bastion host. You can run the following to output the last 100 lines:
+As is possible with any application, there’s a chance that you could run into errors when launching the demo app. If you do encounter any issues, the first thing to do is check the cloud-init log on your bastion host. You can run the following command to output the last 100 lines of this log:
 
 ```
 ssh root@<bastion-ip>
@@ -158,11 +159,11 @@ tail -100 /var/log/cloud-init-output.log
 
 ### API Keys and Tokens
 
-It's common that personal access tokens or spaces access keys are set incorrectly.
+It's a common occurrence that personal access tokens or Spaces access keys are set incorrectly, and this can cause the launch script to fail or throw errors. This section goes over methods for troubleshooting and resolving such problems.
 
 #### Spaces Access Keys
 
-If your spaces access keys are incorrectly, you'll see sommething like the following towards the end of your `cloud-init-output.log`:
+If your Spaces access key is incorrect, you'll see something like the following near the end of your `cloud-init-output.log`:
 
 ```
 ...
@@ -177,9 +178,7 @@ Error loading state: InvalidAccessKeyId:
 ...
 ```
 
-This indicates that your spaces access key ID was entered incorrectly.
-
-The following would indicate that your spaces access key secret was entered incorrectly:
+The following would indicate that your secret key was entered incorrectly:
 
 ```
 ...
@@ -194,7 +193,7 @@ Error loading state: SignatureDoesNotMatch:
 ...
 ```
 
-If either occur, start over by deleting your bastion droplet and create a new one with valid key values in its "User Data" script.
+If either occur, start over by deleting your bastion Droplet and create a new one with valid key values in its "User Data" script.
 
 #### Personal Access Tokens
 
@@ -210,13 +209,13 @@ Error: digitalocean_droplet.bastion (import id: 88489983): 1 error(s) occurred:
 ...
 ```
 
-Again, the easiest approach would be to start over by deleting your bastion droplet and create a new one with a valid token in its "User Data" script.
+Again, the easiest approach would be to start over by deleting your bastion Droplet and creating a new one with a valid token in the "User Data" script.
 
-A less easy approach, if you feel like getting your hands dirty, is to update your token in `/root/statuspage-demo/terraform/token.auto.tfvars`. And then attempt to re-apply your Terraform configuration with `cd /root/statuspage-demo/terraform/ && terraform apply -auto-approve`.
+Alternatively, and if you feel like getting your hands dirty, you could update your token in `/root/statuspage-demo/terraform/token.auto.tfvars` then attempt to re-apply your Terraform configuration with `cd /root/statuspage-demo/terraform/ && terraform apply -auto-approve`.
 
 ### Terraform Apply Failure
 
-Another common issue is that our `terraform apply` command failed for some reason or another. If this is the case, you'll see the following accompanied by a list of errors:
+Another common issue is that the `terraform apply` command failed for some reason or another. If this is the case, you'll see the following accompanied by a list of errors:
 
 ```
 ...
@@ -226,14 +225,15 @@ Error: Error applying plan:
 ...
 ```
 
-In cloud computing and software in general, there's an  _endless_ list of problems that can arise. Because we're depending on so many different services from DNS to DigitalOcean APIs, there's a good chance that one of them didn't behave in the way we needed it to. Terraform does a good job with error messages so you should be able to tell what failed in your cloud-init output.
+In cloud computing and software in general, there's an  _endless_ list of problems that can arise. Because we're depending on so many different services from DNS to DigitalOcean APIs, there's a possibility that one of them didn't behave in the way we needed it to. Terraform does a good job with providing helpful error messages, so you should be able to see what failed in your cloud-init output.
 
-Whatever it is that failed, there's a good chance it will succeed if you re-apply your Terraform configuration. You can do this with the following command:
+There's a chance that whatever failed will succeed if you re-apply your Terraform configuration. You can do this with the following command:
 
 ```
 cd /root/statuspage-demo/terraform/ && terraform apply -auto-approve
 ```
 
-### ANYTHING ELSE!!!
+### Other Issues
 
-First off, sorry for the frustration! Debugging infrastructure code can be a pain. But to look at the bright side, debugging/troubleshooting in general can also be a great learning experience! Our best advice at this point is to recreate your bastion droplet. At least it's a pretty easy thing to do - just a few clicks on the ol' DigitalOcean Control Panel!
+Debugging infrastructure code can sometimes be tedious, but troubleshooting can also provide an excellent learning experience. If you come across errors that aren’t related to what we have covered and you haven’t been able to determine the cause or solution, we recommend that you start over and recreate your bastion Droplet from scratch.
+
