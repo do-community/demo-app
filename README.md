@@ -44,7 +44,7 @@ Go to the **Droplets** tab on the DigitalOcean control panel.
 export do_token="PUT YOUR PERSONAL ACCESS TOKEN HERE"
 export do_spaces_id="PUT YOUR SPACES ACCESS KEY HERE"
 export do_spaces_key="PUT YOUR SPACES ACCESS SECRET HERE"
-export version="0.0.1"
+export version="0.0.2"
 
 curl https://raw.githubusercontent.com/do-community/demo-app/v$version/statuspage-launch.sh | bash
 ```
