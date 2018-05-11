@@ -7,6 +7,8 @@
   pre_tasks:
   - name: Wait 600 seconds for target connection to become reachable/usable
     wait_for_connection:
+  - name: Let vendor data apt finish
+    shell: 'x=5 && while [ $x -gt 0 ] && pgrep apt; do sleep 5; x=$(( $x - 1 )); done'
 
   tasks:
 

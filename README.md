@@ -34,7 +34,7 @@ Go to the **Droplets** tab on the DigitalOcean control panel.
 
 * Under **Choose a datacenter region**, select the **3** under **New York**.
 
-* Under **Select additional options**, select the checkboxes for **Private networking**, **User data**, and **Monitoring**.
+* Under **Select additional options**, select the checkboxes for **Private networking**, **User data**, and **Monitoring**. _Please be sure you do not select "IPv6". Enabling public IPv6 networking causes Terraform 0.11.5 to crash._
 
 * When you select **User data**, a text field will appear. Add the following code into this text field and update the lines starting with `export` with your personal access token and Spaces keys:
 
@@ -44,7 +44,7 @@ Go to the **Droplets** tab on the DigitalOcean control panel.
 export do_token="PUT YOUR PERSONAL ACCESS TOKEN HERE"
 export do_spaces_id="PUT YOUR SPACES ACCESS KEY HERE"
 export do_spaces_key="PUT YOUR SPACES ACCESS SECRET HERE"
-export version="0.0.1"
+export version="0.0.2"
 
 curl https://raw.githubusercontent.com/do-community/demo-app/v$version/statuspage-launch.sh | bash
 ```
