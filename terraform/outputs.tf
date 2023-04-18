@@ -1,11 +1,10 @@
-output "web_address" {
-  value = ["${digitalocean_droplet.web.*.ipv4_address_private}"]
+output "kubeconfig" {
+  value = digitalocean_kubernetes_cluster.primary.kube_config
+  sensitive = true
 }
-
-output "db_address" {
-  value = ["${digitalocean_droplet.db.*.ipv4_address_private}"]
+output "cluster-id" {
+  value = digitalocean_kubernetes_cluster.primary.id
 }
-
-output "lb_address" {
-  value = ["${digitalocean_loadbalancer.lb.*.ip}"]
+output "cluster_info" {
+  value = format("Kubernetes cluster %s is %s", digitalocean_kubernetes_cluster.primary.name, digitalocean_kubernetes_cluster.primary.status)
 }

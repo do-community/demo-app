@@ -1,6 +1,13 @@
-pub_key_path = "~/.ssh/id_rsa.pub"
-ssh_key_path = "~/.ssh/id_rsa"
-
-web_server_params {
-  count = "2"
-}
+#pub_key_path = "~/.ssh/id_rsa.pub"
+#ssh_key_path = "~/.ssh/id_rsa"
+#ssh_key                   = "k3s-1"
+# vpc                      = "d15ada3f-ae57-49ae-a405-224159cb162b"
+do_token                     = "dop_v1_fa120de139aa79be23ea7c7f5a7d652074929514e13da19f350d333b22b68376" # DO API TOKE
+doks_cluster_name            = "kube1"                                    # Name of this `DOKS` cluster ?
+doks_cluster_region          = "ams3"                                     # What region should this `DOKS` cluster be provisioned in?
+doks_cluster_version         = "1.26.3-do.0"                              # What Kubernetes version should this `DOKS` cluster use ?
+doks_cluster_pool_size       = "s-1vcpu-2gb"                          # What machine type to use for this `DOKS` cluster ?
+doks_cluster_pool_node_count = 3                                          # How many worker nodes this `DOKS` cluster should have ?
+tls_private_key_password = "Takietam4+)"
+domain_name               = "kondratov.uk"
+subdomain                 = "test-app"

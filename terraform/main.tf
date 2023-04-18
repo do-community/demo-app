@@ -1,221 +1,141 @@
 provider "digitalocean" {
-  token = "${var.token}"
+  token = "${var.do_token}"
 }
 
-#Add Bastion's SSH Key
-resource "digitalocean_ssh_key" "default" {
-  name       = "Status Page demo"
-  public_key = "${file(var.pub_key_path)}"
+data "digitalocean_ssh_key" "k3s-1" {
+  name = "k3s-1"
+}
+
+data "digitalocean_vpc" "local-vpc" {
+  name = "local-vpc"
+}
+
+
+data "digitalocean_domain" "web" {
+  name = "${var.domain_name}"
 }
 
 #Should be imported during cloud-init
 resource "digitalocean_droplet" "bastion" {
-  image  = "ubuntu-16-04-x64"
+  image  = "ubuntu-22-04-x64"
   name   = "bastion"
   region = "${var.region}"
-  size   = "s-1vcpu-1gb"
-  private_networking = true
+  size   = "s-1vcpu-512mb-10gb"
+  ssh_keys = [data.digitalocean_ssh_key.k3s-1.id]
+#  monitoring = true
+  vpc_uuid   = data.digitalocean_vpc.local-vpc.id
   resize_disk = false
+  lifecycle {
+    create_before_destroy = true
+  }
 }
+
+resource "digitalocean_record" "bastion" {
+    domain = data.digitalocean_domain.web.name
+    type   = "A"
+    name   = "bastion"
+    value  = digitalocean_droplet.bastion.ipv4_address
+    ttl    = 300
+}
+
+################################################################################
+# Create n web servers with nginx installed and a custom message on main page  #
+################################################################################
+resource "digitalocean_droplet" "web" {
+#    count = var.droplet_count
+    image = var.image
+    name = "web-${var.subdomain}-${var.doks_cluster_name}"
+    region = var.doks_cluster_region
+    size = var.droplet_size
+    vpc_uuid = data.digitalocean_vpc.local-vpc.id
+    tags = ["${var.doks_cluster_name}-webserver", "terraform-sample-archs"]
+
+    user_data = <<EOF
+    #cloud-config
+    packages:
+        - nginx
+        - postgresql
+        - postgresql-contrib
+    runcmd:
+        - wget -P /var/www/html https://raw.githubusercontent.com/do-community/terraform-sample-digitalocean-architectures/master/01-minimal-web-db-stack/assets/index.html
+        - sed -i "s/CHANGE_ME/web-${var.doks_cluster_region}/" /var/www/html/index.html
+    EOF
+    lifecycle {
+        create_before_destroy = true
+    }
+}
+
+resource "digitalocean_record" "web-srv" {
+    domain = data.digitalocean_domain.web.name
+    type   = "A"
+    name   = "web-srv"
+    value  = digitalocean_droplet.web.ipv4_address
+    ttl    = 300
+}
+
+
+#resource "digitalocean_certificate" "web" {
+#   name = "web-srv.${var.domain_name}"
+#   type = "lets_encrypt"
+#   domains = ["web-srv.${var.domain_name}"]
+#    lifecycle {
+#        create_before_destroy = true
+#    }
+#}
 
 #Create volume for database droplet
 resource "digitalocean_volume" "db" {
   region = "${var.region}"
-  name   = "statuspage-db-${digitalocean_droplet.bastion.id}"
-  size   = 100
+  name   = "statuspage-db-${digitalocean_droplet.web.id}"
+  size   = 3
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
-#Create database droplet
-resource "digitalocean_droplet" "db" {
-  image  = "ubuntu-16-04-x64"
-  name   = "statuspage-db"
-  region = "${var.region}"
-  size   = "1gb"
+resource "digitalocean_kubernetes_cluster" "primary" {
+  name    = var.doks_cluster_name
+  region  = var.doks_cluster_region
+  version = var.doks_cluster_version
 
-  monitoring = true
-  ssh_keys = ["${digitalocean_ssh_key.default.id}"]
-  private_networking = true
-
-  volume_ids = ["${digitalocean_volume.db.id}"]
-
-  user_data = "${file("user_data.sh")}"
-}
-
-#Create Web-Server droplets
-resource "digitalocean_droplet" "web" {
-  count = "${var.web_server_params["count"]}"
-
-  image  = "ubuntu-16-04-x64"
-  name   = "statuspage-web-${count.index}"
-  region = "${var.region}"
-  size   = "512mb"
-
-  monitoring = true
-  ssh_keys = ["${digitalocean_ssh_key.default.id}"]
-  private_networking = true
-
-  user_data = "${file("user_data.sh")}"
+  node_pool {
+    name       = "${var.doks_cluster_name}-pool"
+    size       = var.doks_cluster_pool_size
+    node_count = var.doks_cluster_pool_node_count
+    tags       = ["backend"]
+#    monitoring = true kube1-pool-*
+    labels = {
+      service  = "backend"
+      priority = "high"
+    }
+  }
+  vpc_uuid   = data.digitalocean_vpc.local-vpc.id
+#  tls_private_key_password = var.tls_private_key_password
+#  tls_cert        = file("cert/tls.crt")
+#  tls_private_key = file("cert/tls.key")
 }
 
 #Create Loadbalancer
-resource "digitalocean_loadbalancer" "lb" {
-  name   = "statuspage-loadbalancer-${digitalocean_droplet.bastion.id}"
-  region = "${var.region}"
+# resource "digitalocean_loadbalancer" "lb" {
+#   name   = "statuspage-loadbalancer-${digitalocean_droplet.bastion.id}"
+#   region = "${var.region}"
+#    forwarding_rule {
+#     entry_port     = 80
+#     entry_protocol = "http"
+# 
+#     target_port     = 8080
+#     target_protocol = "http"
+#   }
+#   healthcheck {
+#     port     = 8080
+#     protocol = "tcp"
+#   }
+# 
+#   droplet_ids = ["${digitalocean_droplet.kube1-pool-*.id}"]
+# # depends_on = ["digitalocean_droplet.kube1"]
+# }
 
-  forwarding_rule {
-    entry_port     = 80
-    entry_protocol = "http"
-
-    target_port     = 8080
-    target_protocol = "http"
-  }
-
-  healthcheck {
-    port     = 8080
-    protocol = "tcp"
-  }
-
-  droplet_ids = ["${digitalocean_droplet.web.*.id}"]
-
-  depends_on = ["digitalocean_droplet.web"]
-}
-
-#Create firewall_rules for web and db droplets
-resource "digitalocean_firewall" "web" {
-  name = "statuspage-loadbalancer-to-web-firewall-${digitalocean_droplet.bastion.id}"
-
-  droplet_ids = ["${digitalocean_droplet.web.*.id}"]
-
-  inbound_rule = [
-    {
-      protocol         = "tcp"
-      port_range       = "8080"
-      source_load_balancer_uids = ["${digitalocean_loadbalancer.lb.id}"]
-    },
-    {
-      protocol         = "tcp"
-      port_range       = "22"
-      source_addresses = ["${digitalocean_droplet.bastion.ipv4_address_private}"]
-    },
-    {
-      protocol         = "icmp"
-      source_addresses = ["${digitalocean_droplet.bastion.ipv4_address_private}"]
-    },
-  ]
-
-  outbound_rule = [
-    {
-      protocol         = "tcp"
-      port_range       = "1-65535"
-      destination_addresses = ["0.0.0.0/0", "::/0"]
-    },
-    {
-      protocol         = "udp"
-      port_range       = "1-65535"
-      destination_addresses = ["0.0.0.0/0", "::/0"]
-    },
-    {
-      protocol         = "icmp"
-      port_range       = "1-65535"
-      destination_addresses = ["0.0.0.0/0", "::/0"]
-    },
-  ]
-}
-
-resource "digitalocean_firewall" "db" {
-  name = "statuspage-web-to-database-firewall-${digitalocean_droplet.bastion.id}"
-
-  droplet_ids = ["${digitalocean_droplet.db.id}"]
-
-  inbound_rule = [
-    {
-      protocol         = "tcp"
-      port_range       = "3306"
-      source_addresses = ["${digitalocean_droplet.web.*.ipv4_address_private}"]
-    },
-    {
-      protocol         = "tcp"
-      port_range       = "22"
-      source_addresses = ["${digitalocean_droplet.bastion.ipv4_address_private}"]
-    },
-    {
-      protocol         = "icmp"
-      source_addresses = ["${digitalocean_droplet.bastion.ipv4_address_private}"]
-    },
-  ]
-
-  outbound_rule = [
-    {
-      protocol         = "tcp"
-      port_range       = "1-65535"
-      destination_addresses = ["0.0.0.0/0", "::/0"]
-    },
-    {
-      protocol         = "udp"
-      port_range       = "1-65535"
-      destination_addresses = ["0.0.0.0/0", "::/0"]
-    },
-    {
-      protocol         = "icmp"
-      port_range       = "1-65535"
-      destination_addresses = ["0.0.0.0/0", "::/0"]
-    },
-  ]
-}
-
-data "template_file" "ansible_hosts" {
-  template = "[web]\n$${web}\n\n[db]\n$${db}\n"
-  depends_on = ["digitalocean_droplet.web", "digitalocean_droplet.db"]
-
-  vars {
-    web = "${join("\n", digitalocean_droplet.web.*.ipv4_address_private)}"
-    db = "db-0 ansible_host=${digitalocean_droplet.db.ipv4_address_private}"
-  }
-}
-
-data "template_file" "load_gen" {
-  template = "* * * * * root ab -qSd -t 60 -n $(shuf -i 50000-150000 -n 1) -c $(shuf -i 50-100 -n 1) http://$${lb_ip}/ 2>&1 > /dev/null"
-  depends_on = ["digitalocean_loadbalancer.lb", "null_resource.ansible_web"]
-
-  vars {
-    lb_ip = "${digitalocean_loadbalancer.lb.ip}"
-  }
-}
-
-resource null_resource "load_gen" {
-  depends_on = ["digitalocean_loadbalancer.lb"]
-  triggers {
-    template_rendered = "${data.template_file.load_gen.rendered}"
-  }
-
-  provisioner "local-exec" {
-    command = "echo '${data.template_file.load_gen.rendered}' > /etc/cron.d/statuspage-load-generator"
-  }
-}
-
-resource null_resource "ansible_prep" {
-  depends_on = ["digitalocean_droplet.web", "digitalocean_droplet.db"]
-  triggers {
-    template_rendered = "${data.template_file.ansible_hosts.rendered}"
-  }
-
-  provisioner "local-exec" {
-    command = "cd ../ansible && echo '${data.template_file.ansible_hosts.rendered}' > hosts"
-  }
-}
-
-resource null_resource "ansible_web" {
-  depends_on = ["null_resource.ansible_prep", "digitalocean_firewall.web"]
-
-  provisioner "local-exec" {
-    command = "cd ../ansible && ansible-playbook playbooks/web.yml"
-  }
-}
-
-resource null_resource "ansible_db" {
-  depends_on = ["null_resource.ansible_prep", "digitalocean_firewall.db"]
-
-  provisioner "local-exec" {
-    command = "cd ../ansible && ansible-playbook playbooks/db.yml"
-  }
-}
+#    # one
+#    lifecycle {
+#        create_before_destroy = true
+#    }

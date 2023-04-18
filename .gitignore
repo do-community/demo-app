@@ -2,3 +2,4 @@
 app/db-seed
 app/docker-compose.yml
 app/run-app
+./cert
